@@ -1,6 +1,7 @@
 import { BUNDLED_WHITELISTS } from '@/core/whitelist';
 import { RuntimeRequest, WarningDecision } from '@/lib/bridge/protocol';
 import { createController, type SessionStore } from '@/lib/background/controller';
+import { appendLog, makeLogEntry, type LogStore } from '@/lib/background/log';
 import { getSettings } from '@/lib/settings';
 
 export default defineBackground(() => {
@@ -31,6 +32,11 @@ export default defineBackground(() => {
       );
     },
     now: () => Date.now(),
+    onFinished: (e) =>
+      appendLog(
+        browser.storage.local as unknown as LogStore,
+        makeLogEntry({ ...e, ts: Date.now() }),
+      ),
   });
 
   browser.runtime.onMessage.addListener((msg: unknown, sender, sendResponse) => {

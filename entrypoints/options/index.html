@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>route-guard 설정</title>
+    <meta name="manifest.open_in_tab" content="true" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>route-guard</h1>
+
+      <section>
+        <h2>검사 범위</h2>
+        <label>
+          <input type="radio" name="mode" value="scoped" />
+          <strong>scoped</strong> (기본) — 공식 DEX 도메인(app.uniswap.org, swap.cow.fi)에서만 엄격
+          검사
+        </label>
+        <label>
+          <input type="radio" name="mode" value="global" />
+          <strong>global</strong> — 모든 사이트를 전체 화이트리스트로 검사 (오탐 측정 실험용)
+        </label>
+        <p id="mode-status" class="muted"></p>
+      </section>
+
+      <section>
+        <h2>판정 로그 <span id="count" class="muted"></span></h2>
+        <div class="actions">
+          <button id="export" type="button">JSON 내보내기</button>
+          <button id="clear" type="button">초기화</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>시각</th>
+                <th>사이트</th>
+                <th>모드</th>
+                <th>메서드</th>
+                <th>레벨</th>
+                <th>규칙</th>
+                <th>결정</th>
+                <th>요약</th>
+              </tr>
+            </thead>
+            <tbody id="logs"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -122,7 +122,7 @@
 - chainId는 `eth_chainId`로 조회해 캐시하고, `chainChanged` 이벤트로 갱신
 - **완료 기준**: 보류-재개 흐름에서 dApp이 정상 동작
 
-### [x] 14 `feat(ui): warning popup window`
+### [x] 14 `feat(ui): warning popup window` — 289ff3a
 - `entrypoints/warning/`: `browser.windows.create({ type: 'popup' })`
 - 표시 내용: 레벨, summary, origin, 매칭된 DEX, 대상/spender/recipient, 토큰·금액, (swap이면) 출력 토큰·최소 수령량
 - 버튼: **취소**(기본 포커스, Esc), 진행 (HIGH는 1.5초 뒤 활성화)
@@ -131,7 +131,7 @@
 - pending 요청 `{ id, tabId, windowId, verdict, createdAt }`을 `browser.storage.session`에 저장하고, 서비스 워커 재시작 시 복구. 탭이 닫히면 정리
 - **완료 기준**: MEDIUM/HIGH에서 창이 뜨고, 진행·취소·창 닫기 세 경우 모두 정상 처리. 창을 띄운 채 서비스 워커를 강제 종료(chrome://serviceworker-internals)해도 진행/취소가 정상 처리
 
-### [ ] 15 `feat(options): mode toggle + verdict log export`
+### [x] 15 `feat(options): mode toggle + verdict log export`
 - 옵션 페이지: `scoped` / `global` 모드 전환 (기본 scoped)
 - background에서 `{ ts, origin, protected, mode, method, verdict, userDecision }`을 storage에 저장 (주소 마스킹, bigint는 문자열 직렬화)
 - 로그 목록, JSON 내보내기, 초기화
