@@ -16,6 +16,7 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "playground": "vite playground --port 5173 --strictPort",
+    "playground:unprotected": "vite playground --host 127.0.0.1 --port 5174 --strictPort",
     "postinstall": "wxt prepare",
     "e2e": "wxt build && playwright test",
     "check:whitelist": "node scripts/check-whitelist.mjs"

@@ -201,10 +201,10 @@
 ### [x] 27 `fix(format): pick Korean particles by final consonant` — 69a389c
 - 을/를, 이/가, 은/는(+ 으로/로) 선택 유틸을 summary 생성 전체에 적용. 숫자·영문은 읽는 소리로 판단, 끝의 괄호는 무시
 
-### [x] 28 `feat(ui): show CoW sell token and amount`
+### [x] 28 `feat(ui): show CoW sell token and amount` — c77c0f9
 - 판매 토큰·금액 → 받을 토큰·최소 수령량 순서
 
-### [ ] 29 `chore(playground): add playground:unprotected for R0 checks`
+### [x] 29 `chore(playground): add playground:unprotected for R0 checks`
 - `127.0.0.1`에서 띄우는 스크립트. protected origin이 아니므로 S2도 경고 없이 통과해야 정상
 
 ---

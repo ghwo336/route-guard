@@ -8,10 +8,19 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],
-  webServer: {
-    command: 'pnpm playground',
-    url: 'http://localhost:5173',
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: [
+    {
+      command: 'pnpm playground',
+      url: 'http://localhost:5173',
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+    {
+      // same page on an origin that is not protected → R0
+      command: 'pnpm playground:unprotected',
+      url: 'http://127.0.0.1:5174',
+      reuseExistingServer: true,
+      timeout: 30_000,
+    },
+  ],
 });

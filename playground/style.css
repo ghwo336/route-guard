@@ -97,6 +97,14 @@ main {
   margin: 0 auto;
   padding: 16px 16px 48px;
 }
+.origin-note {
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--info);
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 10%, transparent);
+}
 .intro {
   font-size: 14px;
   line-height: 1.6;

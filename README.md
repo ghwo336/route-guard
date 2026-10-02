@@ -169,6 +169,8 @@ pnpm playground   # http://localhost:5173
 
 결과의 "누가 막았는지"는 에러 메시지로 추정한 값입니다. 정확한 판정 기록은 확장 옵션 페이지의 로그를 보세요.
 
+**R0(비보호 origin) 확인**: `pnpm playground:unprotected`로 같은 페이지를 `http://127.0.0.1:5174`에 띄웁니다. 이 origin은 화이트리스트에 없으므로 S2 같은 공격 시나리오도 **경고 없이 지갑으로 가야 정상**입니다(scoped 모드). 페이지 상단에 비보호 안내가 뜨고 기대 판정도 R0로 바뀝니다.
+
 | 시나리오 | 실제 요청 | 기대 |
 |---|---|---|
 | S0 정상 승인 | `approve(Permit2, MAX)` | LOW (R1) |
@@ -298,6 +300,7 @@ pnpm test
 pnpm coverage
 pnpm lint
 pnpm playground
+pnpm playground:unprotected   # 127.0.0.1:5174 (R0 확인용)
 pnpm e2e          # Playwright (처음엔 npx playwright install chromium)
 pnpm check:whitelist  # 메인넷 미검증 항목이 있으면 실패 (실험 전 필수)
 ```

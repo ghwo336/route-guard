@@ -1,6 +1,11 @@
 import type { Address } from 'viem';
 import type { RiskLevel } from '../core/types';
-import { buildScenarios, SCENARIO_CHAIN_ID, type Scenario } from '../core/fixtures/scenarios';
+import {
+  buildScenarios,
+  PLAYGROUND_ORIGIN,
+  SCENARIO_CHAIN_ID,
+  type Scenario,
+} from '../core/fixtures/scenarios';
 
 type Eip1193 = { request: (args: { method: string; params?: unknown }) => Promise<unknown> };
 
@@ -30,6 +35,29 @@ const GROUPS: { title: string; ids: string[] }[] = [
   { title: '주문 결과 탈취', ids: ['S4', 'S5', 'S11'] },
   { title: '보호 약화', ids: ['S8'] },
 ];
+
+/**
+ * Only http://localhost:5173 is a protected origin (Sepolia whitelist). Served from anywhere
+ * else (e.g. `pnpm playground:unprotected` on 127.0.0.1) every scenario is expected to be R0.
+ */
+const PROTECTED = location.origin === PLAYGROUND_ORIGIN;
+
+function expected(s: Scenario): Scenario['expected'] & { text: string } {
+  if (!PROTECTED) {
+    return {
+      level: 'LOW',
+      ruleIds: ['R0'],
+      text: '보호 대상 사이트가 아님 → 경고 없이 지갑 창이 바로 떠야 함',
+    };
+  }
+  return {
+    ...s.expected,
+    text:
+      s.expected.level === 'LOW'
+        ? '경고 없이 지갑 창이 바로 떠야 함'
+        : 'route-guard 경고 창이 지갑보다 먼저 떠야 함',
+  };
+}
 
 let account: Address | undefined;
 let chainId: number | undefined;
@@ -102,7 +130,7 @@ function renderScenarios() {
         { className: 'scenario' },
         input,
         el('span', { className: 'name', text: `${s.id} ${s.title}` }),
-        badge(s.expected.level),
+        badge(expected(s).level),
         el('span', { className: 'actual', text: s.actual }),
       );
       label.dataset.id = s.id;
@@ -155,10 +183,7 @@ function renderTimeline(outcome?: Outcome | 'pending') {
     result = el('span', { className: 'muted', text: '스왑을 누르면 표시됩니다' });
   }
 
-  const expectText =
-    s.expected.level === 'LOW'
-      ? '경고 없이 지갑 창이 바로 떠야 함'
-      : `route-guard 경고 창이 지갑보다 먼저 떠야 함`;
+  const exp = expected(s);
 
   $('timeline').replaceChildren(
     step(1, '화면에 보인 것', '100 USDC → 0.025 ETH 스왑, 받는 주소: 내 지갑'),
@@ -169,8 +194,8 @@ function renderTimeline(outcome?: Outcome | 'pending') {
       el(
         'div',
         {},
-        badge(s.expected.level, s.expected.ruleIds),
-        el('span', { className: 'muted', text: `  ${expectText}` }),
+        badge(exp.level, exp.ruleIds),
+        el('span', { className: 'muted', text: `  ${exp.text}` }),
       ),
     ),
     step(4, '결과', result),
@@ -184,7 +209,7 @@ function addHistory(s: Scenario, o: Outcome) {
     'tr',
     {},
     el('td', { text: `${s.id} ${s.title}` }),
-    el('td', {}, badge(s.expected.level, s.expected.ruleIds)),
+    el('td', {}, badge(expected(s).level, expected(s).ruleIds)),
     el('td', {}, el('span', { className: `outcome ${o.kind}`, text: o.text })),
   );
   body.prepend(row);
@@ -284,6 +309,11 @@ $('sepolia').onclick = async () => {
 };
 $('swap').onclick = () => void swap();
 
+if (!PROTECTED) {
+  const note = $('origin-note');
+  note.hidden = false;
+  note.textContent = `이 주소(${location.origin})는 route-guard의 보호 대상이 아닙니다(R0). 모든 시나리오가 경고 없이 지갑으로 가야 정상입니다. 보호 대상 데모는 ${PLAYGROUND_ORIGIN} 에서 여세요.`;
+}
 renderWallet();
 renderScenarios();
 renderTimeline();
