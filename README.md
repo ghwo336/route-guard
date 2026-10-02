@@ -180,6 +180,27 @@ pnpm playground   # http://localhost:5173
 
 같은 데이터([core/fixtures/scenarios.ts](core/fixtures/scenarios.ts))로 `pnpm test`가 판정 결과를 검증합니다.
 
+#### 자동 확인 (e2e)
+
+지갑 없이 스텁 EIP-1193 지갑으로 같은 흐름을 브라우저에서 자동 확인할 수 있습니다.
+
+```sh
+npx playwright install chromium   # 처음 한 번
+pnpm e2e                          # 확장 빌드 → playground 기동 → Chromium에서 테스트
+```
+
+[e2e/flow.spec.ts](e2e/flow.spec.ts)는 다음을 확인합니다.
+- LOW는 그대로 통과하고, HIGH/MEDIUM은 경고 창이 뜹니다. 취소, 진행, 창 닫기, Esc가 모두 동작합니다.
+- 호출 후 params를 바꿔치기해도 지갑에는 원래 값이 갑니다.
+- EIP-6963 provider도 감싸지고, 페이지가 위조한 결정 메시지는 무시됩니다.
+- 비보호 origin은 R0으로 통과하고, global 모드에서는 비보호 origin도 검사합니다.
+- 로그가 남고 지갑 주소가 마스킹됩니다.
+- 서비스 워커가 중지된 뒤에도 결정이 전달됩니다.
+
+[e2e/playground.spec.ts](e2e/playground.spec.ts)는 playground 버튼 S0–S11을 하나씩 눌러 기대 레벨을 확인합니다.
+
+스텁 지갑으로 하는 확인이므로, 실제 MetaMask·Rabby에서의 동작(provider 주입 순서 등)은 위의 수동 절차로 따로 확인해야 합니다.
+
 ### 7.3 로그 내보내기
 
 옵션 페이지의 **판정 로그**에서 **JSON 내보내기**를 누릅니다. 각 항목의 형식은 다음과 같습니다.
@@ -259,6 +280,7 @@ pnpm test
 pnpm coverage
 pnpm lint
 pnpm playground
+pnpm e2e          # Playwright (처음엔 npx playwright install chromium)
 ```
 
 | 경로 | 내용 |
@@ -270,5 +292,6 @@ pnpm playground
 | `lib/background/` | pending 관리(controller), 로그 |
 | `entrypoints/` | WXT entrypoint: `inject.content.ts`(MAIN), `content.ts`(ISOLATED), `background.ts`, `warning/`, `options/` |
 | `playground/` | 변조된 dApp 흉내 페이지 |
+| `e2e/` | Playwright e2e (스텁 지갑 + 빌드한 확장) |
 
 커밋 규칙과 단계별 기록은 [PLAN.md](PLAN.md)에 있습니다.

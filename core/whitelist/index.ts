@@ -1,5 +1,5 @@
-import mainnet from './1.json';
-import sepolia from './11155111.json';
+import mainnet from './1.json' with { type: 'json' };
+import sepolia from './11155111.json' with { type: 'json' };
 import type { Whitelists } from './loader';
 import { parseWhitelist } from './schema';
 

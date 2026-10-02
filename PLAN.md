@@ -2,7 +2,7 @@
 
 > 규칙: 위에서부터 순서대로 진행한다. 한 항목 = 한 커밋. 각 커밋은 `pnpm typecheck && pnpm test`를 통과해야 한다.
 > 완료한 항목은 `[x]`로 체크하고, 커밋 해시를 옆에 적는다.
-> 세부 스펙은 `AGENTS.md`를 따른다. 규칙 번호(R0~R16)와 시나리오 번호(S0~S10)는 AGENTS.md 9장과 11장 기준이다.
+> 세부 스펙은 `AGENTS.md`를 따른다. 규칙 번호(R0~R16)와 시나리오 번호(S0~S11)는 AGENTS.md 9장과 11장 기준이다.
 
 ---
 
@@ -162,12 +162,12 @@
 ### [x] 18 `chore(core): mark UR 2.2.0 and SwapProxy as unverified` — c95378a
 - 실사이트에서 `to` 주소를 확인하기 전까지 `verified: false`. 판정에는 그대로 쓰되, 표시에 "(미검증)"을 붙인다
 
-### [x] 19 `feat(core): decode UniswapX order recipients`
+### [x] 19 `feat(core): decode UniswapX order recipients` — 8467bfb
 - Permit2 witness 주문(ExclusiveDutch / V2Dutch / V3Dutch / Priority)의 `outputs[].recipient` 디코딩 → 본인·feeRecipients가 아니면 R8
 - 디코딩할 수 없는 witness 타입(Relay 등)은 R9 MEDIUM
 - S11 (UniswapX recipient = ATTACKER → HIGH R8) 추가
 
-### [ ] 20 `test(e2e): add Playwright e2e (pnpm e2e)`
+### [x] 20 `test(e2e): add Playwright e2e (pnpm e2e)`
 - 스텁 지갑 + 빌드한 확장으로 경고 흐름과 playground S0–S11 검증
 
 ### [ ] 21 `docs: note R10 is a bypassable heuristic`
@@ -193,4 +193,3 @@
 - 트랜잭션 시뮬레이션으로 잔고 변화 표시
 - 지원 DEX/체인 확장
 - typed data `domain.chainId`와 현재 체인 비교
-- e2e 테스트(Playwright + 스텁 지갑)를 저장소에 포함 (현재는 저장소 밖에서 1회 실행)
