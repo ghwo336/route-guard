@@ -101,6 +101,38 @@ dd {
   white-space: pre-wrap;
   word-break: break-all;
 }
+.addr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 2px 0;
+}
+.addr.warn .mono {
+  color: var(--high);
+  font-weight: 700;
+}
+.tag {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.tag.warn {
+  color: #fff;
+  background: var(--high);
+}
+.tag.ok {
+  color: var(--low);
+  background: color-mix(in srgb, var(--low) 15%, transparent);
+}
+dd .mono,
 dd.mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }

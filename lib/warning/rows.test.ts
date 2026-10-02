@@ -93,6 +93,43 @@ describe('verdictRows', () => {
     expect(rows.map((r) => r.label)).toEqual(['사이트', '요청', '토큰', '금액', '규칙']);
   });
 
+  it('address rows carry notes as items (badge + tone)', () => {
+    const rows = verdictRows({
+      level: 'HIGH',
+      ruleIds: ['R8'],
+      summary: '',
+      details: {
+        origin: 'x',
+        protected: true,
+        method: 'eth_sendTransaction',
+        chainId: 1,
+        target: '0x1111111111111111111111111111111111111111',
+        recipients: [
+          '0x0000000000000000000000000000000000000002',
+          '0x3333333333333333333333333333333333333333',
+        ],
+        notes: {
+          target: { badge: '공식 Uniswap UniversalRouter 2.0', tone: 'ok' },
+          recipients: [
+            { display: '라우터 내부 보관 (ADDRESS_THIS)', tone: 'ok' },
+            { badge: '⚠ 본인 아님', tone: 'warn' },
+          ],
+        },
+      },
+    });
+    const rec = rows.find((r) => r.label === '받는 주소 (recipient)')!;
+    expect(rec.items).toEqual([
+      { text: '라우터 내부 보관 (ADDRESS_THIS)', badge: undefined, tone: 'ok' },
+      { text: '0x3333333333333333333333333333333333333333', badge: '⚠ 본인 아님', tone: 'warn' },
+    ]);
+    expect(rec.value).toBe(
+      '라우터 내부 보관 (ADDRESS_THIS)\n0x3333333333333333333333333333333333333333 · ⚠ 본인 아님',
+    );
+    expect(rows.find((r) => r.label === '대상 컨트랙트')?.value).toBe(
+      '0x1111111111111111111111111111111111111111 · 공식 Uniswap UniversalRouter 2.0',
+    );
+  });
+
   it('delays proceed only for HIGH', () => {
     expect(proceedDelayMs('HIGH')).toBeGreaterThan(0);
     expect(proceedDelayMs('MEDIUM')).toBe(0);

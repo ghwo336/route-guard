@@ -213,10 +213,10 @@
 
 판정 로직은 바꾸지 않는다. 라벨·강조 판단은 `core/format/`의 순수 함수로 둔다.
 
-### [x] 30 `fix(format): count only MEDIUM/HIGH findings in "(외 N건)"`
+### [x] 30 `fix(format): count only MEDIUM/HIGH findings in "(외 N건)"` — 84606ff
 - LOW 규칙(R1, R4, R7 …)은 개수에서 제외. `ruleIds`는 그대로
 
-### [ ] 31 `feat(ui): highlight spender and recipients`
+### [x] 31 `feat(ui): highlight spender and recipients`
 - 본인/센티널/화이트리스트가 아닌 주소에 "⚠ 본인 아님" / "⚠ 미등록" 배지와 경고색, 정상 주소에는 "본인", "공식 Uniswap Permit2" 같은 라벨
 
 ### [ ] 32 `feat(format): label CoW receiver 0x0 as the order owner`

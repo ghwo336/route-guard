@@ -1,4 +1,5 @@
 import { decodeRequest, type DecodeContext } from './decode';
+import { buildNotes } from './format/addresses';
 import { otherFindings, withOthers } from './format/summary';
 import {
   byRisk,
@@ -72,16 +73,14 @@ export function analyze(req: SignRequest, whitelists: Whitelists, mode: Mode): V
     let summary = withOthers(top?.message ?? worst.summary ?? '', otherFindings(hits, top));
     if (results.length > 1) summary = `[${results.length}개 호출 중 ${worstIdx + 1}번] ${summary}`;
 
-    return {
-      level,
-      ruleIds,
-      summary,
-      details: clean({
-        ...baseDetails(req, scope),
-        ...worst.details,
-        matchedDex: worst.details.matchedDex ?? baseDetails(req, scope).matchedDex,
-      }),
-    };
+    const details = clean({
+      ...baseDetails(req, scope),
+      ...worst.details,
+      matchedDex: worst.details.matchedDex ?? baseDetails(req, scope).matchedDex,
+    });
+    // display-only labels for the addresses shown in the warning
+    details.notes = buildNotes(details, decoded.actions[worstIdx]!, ctx);
+    return { level, ruleIds, summary, details };
   } catch (e) {
     return {
       level: 'MEDIUM',

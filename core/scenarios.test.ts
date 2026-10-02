@@ -57,3 +57,49 @@ describe('AGENTS.md 11장 시나리오 S0–S11', () => {
     }
   });
 });
+
+describe('warning labels for the offending address (display only)', () => {
+  const v = (id: string) => {
+    const s = scenarios.find((x) => x.id === id)!;
+    return analyze(toRequest(s, PLAYGROUND_ORIGIN), BUNDLED_WHITELISTS, 'scoped');
+  };
+
+  it('S2 / S3: the attacker spender is flagged', () => {
+    expect(v('S2').details.notes?.spender).toEqual({ badge: '⚠ 미등록', tone: 'warn' });
+    expect(v('S3').details.notes).toMatchObject({
+      target: { badge: '공식 Uniswap Permit2', tone: 'ok' },
+      spender: { badge: '⚠ 미등록', tone: 'warn' },
+    });
+  });
+
+  it('S7: router is official, the attacker recipient is flagged', () => {
+    expect(v('S7').details.notes).toEqual({
+      target: { badge: '공식 Uniswap UniversalRouter 2.0', tone: 'ok' },
+      recipients: [
+        { display: '라우터 내부 보관 (ADDRESS_THIS)', tone: 'ok' },
+        { badge: '⚠ 본인 아님', tone: 'warn' },
+      ],
+    });
+  });
+
+  it('S11: official reactor and Permit2, attacker recipient flagged', () => {
+    expect(v('S11').details.notes).toEqual({
+      target: { badge: '공식 Uniswap Permit2', tone: 'ok' },
+      spender: { badge: '공식 Uniswap V2DutchOrderReactor (UniswapX) (미검증)', tone: 'ok' },
+      recipients: [{ badge: '⚠ 본인 아님', tone: 'warn' }],
+    });
+    expect(v('S11').summary).toBe(
+      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0이 받습니다.',
+    );
+  });
+
+  it('S1: everything reads as normal', () => {
+    expect(v('S1').details.notes).toEqual({
+      target: { badge: '공식 Uniswap UniversalRouter 2.0', tone: 'ok' },
+      recipients: [
+        { display: '라우터 내부 보관 (ADDRESS_THIS)', tone: 'ok' },
+        { display: '본인 (MSG_SENDER)', tone: 'ok' },
+      ],
+    });
+  });
+});

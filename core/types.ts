@@ -49,6 +49,15 @@ export type RuleId = (typeof RULE_IDS)[number];
 
 export type Amount = bigint | 'UNLIMITED';
 
+/** Display-only annotation for an address shown in the warning (never affects the verdict). */
+export type AddressNote = {
+  /** Replaces the raw address (e.g. sentinels). */
+  display?: string;
+  /** Short tag next to it, e.g. "본인", "공식 Uniswap Permit2", "⚠ 본인 아님". */
+  badge?: string;
+  tone: 'ok' | 'warn';
+};
+
 export type VerdictDetails = {
   origin: string;
   protected: boolean;
@@ -64,6 +73,8 @@ export type VerdictDetails = {
   minAmountOut?: bigint;
   /** 'uniswap' | 'cow' */
   matchedDex?: string;
+  /** Display-only labels for target / spender / recipients (same order as `recipients`). */
+  notes?: { target?: AddressNote; spender?: AddressNote; recipients?: AddressNote[] };
 };
 
 export type Verdict = {

@@ -3,6 +3,7 @@ import type { AllowedSet } from '../whitelist/loader';
 import { lookup } from '../whitelist/loader';
 import { formatAmount, tokenMeta } from './amount';
 
+export * from './addresses';
 export * from './amount';
 export * from './josa';
 export * from './sentinel';

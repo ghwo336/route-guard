@@ -1,8 +1,21 @@
 import { formatAmount, tokenLabel } from '@/core/format/amount';
 import { recipientLabel } from '@/core/format/sentinel';
-import type { Verdict } from '@/core/types';
+import type { AddressNote, Verdict } from '@/core/types';
 
-export type Row = { label: string; value: string; mono?: boolean };
+export type RowItem = { text: string; badge?: string; tone?: 'ok' | 'warn' };
+/** `value` is the plain-text form; `items` (when present) is what the window renders. */
+export type Row = { label: string; value: string; mono?: boolean; items?: RowItem[] };
+
+function itemsRow(label: string, items: RowItem[]): Row {
+  const value = items.map((i) => (i.badge ? `${i.text} · ${i.badge}` : i.text)).join('\n');
+  return { label, value, mono: true, items };
+}
+
+const item = (address: string, note?: AddressNote): RowItem => ({
+  text: note?.display ?? recipientLabel(address),
+  badge: note?.badge,
+  tone: note?.tone,
+});
 
 /** Facts shown in the warning window, in display order. Missing fields are skipped. */
 export function verdictRows(v: Verdict): Row[] {
@@ -14,14 +27,15 @@ export function verdictRows(v: Verdict): Row[] {
     { label: '사이트', value: d.origin, mono: true },
     d.matchedDex ? { label: '매칭된 DEX', value: d.matchedDex } : undefined,
     { label: '요청', value: `${d.method} (chainId ${d.chainId})`, mono: true },
-    d.target ? { label: '대상 컨트랙트', value: d.target, mono: true } : undefined,
-    d.spender ? { label: '권한 받는 주소 (spender)', value: d.spender, mono: true } : undefined,
+    d.target ? itemsRow('대상 컨트랙트', [item(d.target, d.notes?.target)]) : undefined,
+    d.spender
+      ? itemsRow('권한 받는 주소 (spender)', [item(d.spender, d.notes?.spender)])
+      : undefined,
     d.recipients?.length
-      ? {
-          label: '받는 주소 (recipient)',
-          value: d.recipients.map(recipientLabel).join('\n'),
-          mono: true,
-        }
+      ? itemsRow(
+          '받는 주소 (recipient)',
+          d.recipients.map((r, i) => item(r, d.notes?.recipients?.[i])),
+        )
       : undefined,
     d.token
       ? { label: trade ? '판매 토큰' : '토큰', value: token(d.token), mono: true }

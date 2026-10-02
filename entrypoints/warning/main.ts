@@ -30,8 +30,27 @@ async function main() {
     const dt = document.createElement('dt');
     dt.textContent = row.label;
     const dd = document.createElement('dd');
-    dd.textContent = row.value;
-    if (row.mono) dd.className = 'mono';
+    if (row.items) {
+      // one line per address: the address (or its meaning) plus a tag
+      for (const it of row.items) {
+        const line = document.createElement('div');
+        line.className = `addr${it.tone ? ` ${it.tone}` : ''}`;
+        const text = document.createElement('span');
+        text.className = 'mono';
+        text.textContent = it.text;
+        line.append(text);
+        if (it.badge) {
+          const tag = document.createElement('span');
+          tag.className = `tag ${it.tone ?? ''}`;
+          tag.textContent = it.badge;
+          line.append(tag);
+        }
+        dd.append(line);
+      }
+    } else {
+      dd.textContent = row.value;
+      if (row.mono) dd.className = 'mono';
+    }
     dl.append(dt, dd);
   }
 
