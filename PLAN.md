@@ -107,7 +107,7 @@
 - 이 단계에서는 감시 대상 메서드를 **콘솔에 찍기만 하고** 그대로 통과
 - **완료 기준**: MetaMask, Rabby에서 Uniswap 스왑 시 콘솔에 요청이 찍히고 기존 동작이 깨지지 않음
 
-### [x] 12 `feat(bridge): inject ↔ content ↔ background messaging`
+### [x] 12 `feat(bridge): inject ↔ content ↔ background messaging` — afeb878
 - 요청 id(UUID)를 붙여 postMessage → runtime.sendMessage → 응답 매칭
 - inject ↔ content는 document_start에 한 번만 넘긴 private `MessagePort`로 통신 (페이지가 결정 메시지를 위조하지 못하게). 직렬화는 content(ISOLATED)에서
 - origin은 content script의 `location.origin`(또는 `sender.origin`)으로 붙임. 페이지가 보낸 값은 무시
@@ -116,7 +116,7 @@
 - background는 `analyze()` 결과만 돌려줌 (UI 없음)
 - **완료 기준**: 콘솔에 Verdict가 찍힘
 
-### [ ] 13 `feat(background): hold request until verdict`
+### [x] 13 `feat(background): hold request until verdict`
 - inject에서 감시 대상 요청을 Verdict가 올 때까지 보류
 - LOW / R0 → 원본 request 호출. 그 외 → 일단 콘솔 경고 후 통과 (UI는 다음 커밋)
 - chainId는 `eth_chainId`로 조회해 캐시하고, `chainChanged` 이벤트로 갱신
