@@ -8,7 +8,7 @@
 
 ## Phase 0. 세팅
 
-### [ ] 01 `chore: scaffold WXT + TypeScript + vitest`
+### [x] 01 `chore: scaffold WXT + TypeScript + vitest` — ed6d093
 - WXT MV3 템플릿(vanilla TS), pnpm
 - 의존성: viem, zod, vitest, @vitest/coverage-v8
 - 스크립트: `dev`, `build`, `typecheck`, `test`, `lint`, `playground`
