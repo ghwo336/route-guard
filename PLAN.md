@@ -141,12 +141,12 @@
 
 ## Phase 3. 실험
 
-### [x] 16 `feat(playground): fake compromised dApp`
+### [x] 16 `feat(playground): fake compromised dApp` — 1b99ef9
 - `playground/`: Vite 단일 페이지(`http://localhost:5173`), 화면 문구는 항상 "100 USDC → ETH 스왑"
 - 시나리오 버튼 S0~S10, 요청 데이터는 `core/fixtures/scenarios.ts` 재사용
 - **완료 기준**: 확장을 켜고 각 버튼을 누르면 기대 레벨대로 경고가 뜸
 
-### [ ] 17 `docs: README, threat model, experiment guide`
+### [x] 17 `docs: README, threat model, experiment guide`
 - 용어 정의(router / spender / pool / recipient), 위협 모델, 동작 구조 그림, 판정 규칙 표
 - 적용 범위 정책(scoped/global)과 그렇게 정한 이유
 - **한계**: MAIN world 우회 가능성, protected origin 밖 미보호, 가짜 토큰 경로, 애그리게이터, 멀티시그, 확장 자체 변조, CoW `setPreSignature` 내용 미확인(R16), `others` calldata 미해석, `eth_signTypedData` v1 미해석
@@ -174,3 +174,6 @@
 - 온체인 화이트리스트 레지스트리 (멀티시그 + 타임락): 현재 사용하지 않기로 결정
 - 트랜잭션 시뮬레이션으로 잔고 변화 표시
 - 지원 DEX/체인 확장
+- UniswapX 주문 witness의 출력 recipient 검사 (현재는 reactor spender만 검사)
+- typed data `domain.chainId`와 현재 체인 비교
+- e2e 테스트(Playwright + 스텁 지갑)를 저장소에 포함 (현재는 저장소 밖에서 1회 실행)

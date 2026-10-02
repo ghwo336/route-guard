@@ -44,6 +44,8 @@ DEX 프론트엔드가 이미 변조됐다고 가정한다. 사용자가 서명�
   - CoW `setPreSignature`는 tx만으로 주문 내용(receiver 등)을 알 수 없어서 MEDIUM(R16)까지만 경고한다.
   - `others`(PositionManager 등) 호출은 `to`만 확인하고 calldata 안의 recipient는 해석하지 않는다.
   - `eth_signTypedData`(v1)는 내용을 해석하지 않고 MEDIUM(R13)으로만 처리한다.
+  - UniswapX 주문(Permit2 witness)은 spender(reactor)만 검사하고 witness 안의 출력 recipient는 검사하지 않는다.
+  - typed data의 `domain.chainId`는 현재 체인과 비교하지 않는다.
 
 ## 4. 기술 스택
 
