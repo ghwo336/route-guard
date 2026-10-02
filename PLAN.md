@@ -176,11 +176,36 @@
 - `pnpm check:whitelist`: 메인넷 JSON에 `verified: false`가 있으면 실패, Sepolia는 경고만
 - 리서치 4장 실험(README 7.5·7.6) 전에 반드시 통과
 
-### [x] 23 `feat(playground): redesign as one swap screen + attacker panel`
+### [x] 23 `feat(playground): redesign as one swap screen + attacker panel` — a1a7ec5
 - 한 화면에 스왑 버튼 하나, 시나리오는 별도 "공격자 패널"에서 선택 (화면은 그대로, 요청만 바뀜)
 - "이번 요청" 타임라인: 화면에 보인 것 → 실제 요청 → 기대 판정 → 결과(route-guard 차단 / 지갑까지 전달 / 지갑 거절, 추정 표시)
 - 요청 중에는 버튼·패널 잠금, 실행 기록 누적. 실제 서비스 브랜딩은 쓰지 않음
 - README 한계: R10은 1 wei 등으로 우회 가능한 보조 휴리스틱
+
+---
+
+## Phase 5. playground QA 반영 (경고창 UX)
+
+판정 로직(rules, level, ruleIds)은 바꾸지 않는다. 표시 계층(요약 문구, 경고창, 포맷 유틸)만 수정한다.
+
+### [x] 24 `fix(ui): pin warning buttons to the bottom`
+- 본문만 스크롤, 취소/진행 버튼은 하단 고정. 창 기본 높이 660 → 760
+
+### [ ] 25 `feat(format): show token amounts with decimals`
+- 정적 토큰 메타데이터(`core/format/tokens.json`, 체인별 symbol·decimals). 온체인 조회 금지
+- 아는 토큰은 `100 USDC`, 모르는 토큰은 주소 + "decimals 알 수 없음" + 원시값, `0x0…0`은 "ETH (네이티브)", 무제한은 "무제한"
+
+### [ ] 26 `feat(format): label sentinel recipients`
+- `MSG_SENDER` → "본인 (MSG_SENDER)", `ADDRESS_THIS` → "라우터 내부 보관 (ADDRESS_THIS)" (표시만)
+
+### [ ] 27 `fix(format): pick Korean particles by final consonant`
+- 을/를, 이/가, 은/는 선택 유틸을 summary 생성 전체에 적용
+
+### [ ] 28 `feat(ui): show CoW sell token and amount`
+- 판매 토큰·금액 → 받을 토큰·최소 수령량 순서
+
+### [ ] 29 `chore(playground): add playground:unprotected for R0 checks`
+- `127.0.0.1`에서 띄우는 스크립트. protected origin이 아니므로 S2도 경고 없이 통과해야 정상
 
 ---
 

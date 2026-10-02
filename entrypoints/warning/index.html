@@ -8,15 +8,17 @@
   </head>
   <body>
     <main id="app" data-level="">
-      <header>
-        <span id="badge" class="badge"></span>
-        <h1 id="summary">불러오는 중…</h1>
-      </header>
-      <p class="note">
-        화면에 보이는 내용이 아니라 <strong>지갑에 실제로 전달되는 요청</strong>을 공식 컨트랙트
-        목록과 비교한 결과입니다.
-      </p>
-      <dl id="rows"></dl>
+      <div class="scroll">
+        <header>
+          <span id="badge" class="badge"></span>
+          <h1 id="summary">불러오는 중…</h1>
+        </header>
+        <p class="note">
+          화면에 보이는 내용이 아니라 <strong>지갑에 실제로 전달되는 요청</strong>을 공식 컨트랙트
+          목록과 비교한 결과입니다.
+        </p>
+        <dl id="rows"></dl>
+      </div>
       <footer>
         <button id="cancel" type="button" class="primary" autofocus>취소</button>
         <button id="proceed" type="button" class="danger" disabled>진행</button>

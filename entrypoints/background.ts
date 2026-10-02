@@ -16,7 +16,7 @@ export default defineBackground(() => {
         url: `${browser.runtime.getURL('/warning.html')}?id=${encodeURIComponent(id)}`,
         type: 'popup',
         width: 440,
-        height: 660,
+        height: 760,
         focused: true,
       });
       return win?.id;
