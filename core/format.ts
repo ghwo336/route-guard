@@ -11,7 +11,8 @@ export function shortAddress(a: Address): string {
 /** "Label(0xAbCd…1234)" for whitelisted addresses, else the short address. */
 export function describeAddress(a: Address, allowed: AllowedSet): string {
   const hit = lookup(allowed, a);
-  return hit ? `${hit.entry.label}(${shortAddress(a)})` : shortAddress(a);
+  if (!hit) return shortAddress(a);
+  return `${hit.entry.label}${hit.entry.verified ? '' : ' (미검증)'}(${shortAddress(a)})`;
 }
 
 export function describeAmount(amount: bigint | 'UNLIMITED'): string {

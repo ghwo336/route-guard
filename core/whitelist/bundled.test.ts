@@ -70,6 +70,14 @@ describe('bundled whitelists', () => {
     expect(s.allowed.routers.size).toBe(2);
   });
 
+  it('only addresses awaiting a live-site check are unverified', () => {
+    const unverified = new Set<string>();
+    for (const wl of Object.values(BUNDLED_WHITELISTS)) {
+      for (const e of allEntries(wl)) if (!e.verified) unverified.add(e.label);
+    }
+    expect([...unverified].sort()).toEqual(['SwapProxy', 'UniversalRouter 2.2.0']);
+  });
+
   it('no address appears under two different labels', () => {
     for (const wl of Object.values(BUNDLED_WHITELISTS)) {
       const labels = new Map<string, string>();

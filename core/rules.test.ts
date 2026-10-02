@@ -288,6 +288,15 @@ describe('router R7-R10', () => {
     expectRule(tx(ATTACKER, swap(r.MSG_SENDER, 1n)), 'HIGH', ['R11']);
   });
 
+  it('unverified whitelist entries are labelled in summaries', () => {
+    const ok = [
+      r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+    ];
+    expect(run(tx(PROXY, r.swapProxyExecute(UR, USDC, 1n, ok))).summary).toContain(
+      'SwapProxy (미검증)',
+    );
+  });
+
   it('SwapProxy: inner router must be whitelisted', () => {
     const inner = [
       r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),

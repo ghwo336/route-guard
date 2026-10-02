@@ -36,7 +36,7 @@
           "address": "0xab863E752Bf67D8DCDD929EaAe9Be9dc83Fb3BbB",
           "label": "UniversalRouter 2.2.0",
           "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
-          "verified": true,
+          "verified": false,
           "version": "2.2.0"
         },
         {
@@ -49,7 +49,7 @@
           "address": "0x02E5be68D46DAc0B524905bfF209cf47EE6dB2a9",
           "label": "SwapProxy",
           "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
-          "verified": true
+          "verified": false
         }
       ],
       "spenders": [
@@ -63,7 +63,7 @@
           "address": "0x02E5be68D46DAc0B524905bfF209cf47EE6dB2a9",
           "label": "SwapProxy",
           "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
-          "verified": true
+          "verified": false
         },
         {
           "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",

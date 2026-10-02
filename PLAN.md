@@ -146,7 +146,7 @@
 - 시나리오 버튼 S0~S10, 요청 데이터는 `core/fixtures/scenarios.ts` 재사용
 - **완료 기준**: 확장을 켜고 각 버튼을 누르면 기대 레벨대로 경고가 뜸
 
-### [x] 17 `docs: README, threat model, experiment guide`
+### [x] 17 `docs: README, threat model, experiment guide` — b920c26
 - 용어 정의(router / spender / pool / recipient), 위협 모델, 동작 구조 그림, 판정 규칙 표
 - 적용 범위 정책(scoped/global)과 그렇게 정한 이유
 - **한계**: MAIN world 우회 가능성, protected origin 밖 미보호, 가짜 토큰 경로, 애그리게이터, 멀티시그, 확장 자체 변조, CoW `setPreSignature` 내용 미확인(R16), `others` calldata 미해석, `eth_signTypedData` v1 미해석
@@ -154,6 +154,24 @@
 - 오탐 실험: 실제 app.uniswap.org / swap.cow.fi에서 정상 스왑·승인 N회
 - 대조 실험: 같은 시나리오를 MetaMask 기본 경고와 Rabby에도 돌려 결과를 표로 기록
 - **완료 기준**: 처음 보는 사람이 README만 보고 실험을 재현할 수 있음
+
+---
+
+## Phase 4. 리뷰 반영
+
+### [x] 18 `chore(core): mark UR 2.2.0 and SwapProxy as unverified`
+- 실사이트에서 `to` 주소를 확인하기 전까지 `verified: false`. 판정에는 그대로 쓰되, 표시에 "(미검증)"을 붙인다
+
+### [ ] 19 `feat(core): decode UniswapX order recipients`
+- Permit2 witness 주문(ExclusiveDutch / V2Dutch / V3Dutch / Priority)의 `outputs[].recipient` 디코딩 → 본인·feeRecipients가 아니면 R8
+- 디코딩할 수 없는 witness 타입(Relay 등)은 R9 MEDIUM
+- S11 (UniswapX recipient = ATTACKER → HIGH R8) 추가
+
+### [ ] 20 `test(e2e): add Playwright e2e (pnpm e2e)`
+- 스텁 지갑 + 빌드한 확장으로 경고 흐름과 playground S0–S11 검증
+
+### [ ] 21 `docs: note R10 is a bypassable heuristic`
+- README 한계: R10은 1 wei 등으로 우회 가능한 보조 휴리스틱
 
 ---
 
