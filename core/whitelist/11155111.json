@@ -1,0 +1,139 @@
+{
+  "chainId": 11155111,
+  "dexes": {
+    "uniswap": {
+      "origins": ["https://app.uniswap.org", "http://localhost:5173"],
+      "routers": [
+        {
+          "address": "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
+          "label": "UniversalRouter 1.2",
+          "source": "https://github.com/Uniswap/universal-router/blob/main/deploy-addresses/sepolia.json",
+          "verified": true,
+          "version": "1.2"
+        },
+        {
+          "address": "0x3a9d48ab9751398bbfa63ad67599bb04e4bdf98b",
+          "label": "UniversalRouter 2.0",
+          "source": "https://github.com/Uniswap/universal-router/blob/main/deploy-addresses/sepolia.json",
+          "verified": true,
+          "version": "2.0"
+        },
+        {
+          "address": "0x7DfD4F31be6814D2906BDE155c3e1B146EAc1468",
+          "label": "UniversalRouter 2.1.1",
+          "source": "https://github.com/Uniswap/universal-router/blob/main/deploy-addresses/sepolia.json",
+          "verified": true,
+          "version": "2.1.1"
+        },
+        {
+          "address": "0x7E4f6c5e954Da5c61B3423D81E2277431Ac043f3",
+          "label": "UniversalRouter 2.1.2",
+          "source": "https://github.com/Uniswap/universal-router/blob/main/deploy-addresses/sepolia.json",
+          "verified": true,
+          "version": "2.1.2"
+        },
+        {
+          "address": "0x5093f1CDED83d99FfEd6602dA6260672ae16787c",
+          "label": "UniversalRouter 2.2.0",
+          "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
+          "verified": true,
+          "version": "2.2.0"
+        },
+        {
+          "address": "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
+          "label": "SwapRouter02",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+          "verified": true
+        },
+        {
+          "address": "0x02E5be68D46DAc0B524905bfF209cf47EE6dB2a9",
+          "label": "SwapProxy",
+          "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
+          "verified": true
+        }
+      ],
+      "spenders": [
+        {
+          "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+          "label": "Permit2",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+          "verified": true
+        },
+        {
+          "address": "0x02E5be68D46DAc0B524905bfF209cf47EE6dB2a9",
+          "label": "SwapProxy",
+          "source": "https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/utils/constants.ts",
+          "verified": true
+        },
+        {
+          "address": "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
+          "label": "SwapRouter02",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+          "verified": true
+        },
+        {
+          "address": "0x1238536071E1c677A632429e3655c799b22cDA52",
+          "label": "NonfungiblePositionManager",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+          "verified": true
+        },
+        {
+          "address": "0x429ba70129df741B2Ca2a85BC3A2a3328e5c09b4",
+          "label": "PositionManager (v4)",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v4/deployments.mdx",
+          "verified": true
+        }
+      ],
+      "others": [
+        {
+          "address": "0x1238536071E1c677A632429e3655c799b22cDA52",
+          "label": "NonfungiblePositionManager",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+          "verified": true
+        },
+        {
+          "address": "0x429ba70129df741B2Ca2a85BC3A2a3328e5c09b4",
+          "label": "PositionManager (v4)",
+          "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v4/deployments.mdx",
+          "verified": true
+        }
+      ],
+      "feeRecipients": []
+    },
+    "cow": {
+      "origins": ["https://swap.cow.fi", "http://localhost:5173"],
+      "routers": [
+        {
+          "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+          "label": "GPv2Settlement",
+          "source": "https://github.com/cowprotocol/contracts/blob/main/networks.json",
+          "verified": true
+        },
+        {
+          "address": "0xba3cb449bd2b4adddbc894d8697f5170800eadec",
+          "label": "CoWSwapEthFlow",
+          "source": "https://github.com/cowprotocol/ethflowcontract/blob/main-artifacts/networks.prod.json",
+          "verified": true
+        }
+      ],
+      "spenders": [
+        {
+          "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
+          "label": "GPv2VaultRelayer",
+          "source": "https://github.com/cowprotocol/contracts/blob/main/networks.json",
+          "verified": true
+        }
+      ],
+      "others": [],
+      "feeRecipients": []
+    }
+  },
+  "utilities": [
+    {
+      "address": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+      "label": "WETH",
+      "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",
+      "verified": true
+    }
+  ]
+}

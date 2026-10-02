@@ -20,8 +20,8 @@ export type Scope = {
   protected: boolean;
   /** The chain has no whitelist but the origin is protected elsewhere → R14. */
   noWhitelist?: boolean;
-  /** DEX whose origin matched, if any. */
-  dex?: string;
+  /** DEXes whose origins matched (usually one; the dev playground matches several). */
+  dexes: string[];
   allowed: AllowedSet;
 };
 
@@ -46,11 +46,10 @@ export function getWhitelist(chainId: number, whitelists: Whitelists): Whitelist
   return whitelists[chainId];
 }
 
-function dexForOrigin(wl: Whitelist, origin: string): string | undefined {
-  for (const [name, dex] of Object.entries(wl.dexes)) {
-    if (dex.origins.includes(origin)) return name;
-  }
-  return undefined;
+function dexesForOrigin(wl: Whitelist, origin: string): string[] {
+  return Object.entries(wl.dexes)
+    .filter(([, dex]) => dex.origins.includes(origin))
+    .map(([name]) => name);
 }
 
 function buildAllowed(wl: Whitelist, dexNames: string[]): AllowedSet {
@@ -91,19 +90,19 @@ export function resolveScope(
 
   if (!wl) {
     const knownElsewhere =
-      o !== undefined && Object.values(whitelists).some((w) => dexForOrigin(w, o) !== undefined);
+      o !== undefined && Object.values(whitelists).some((w) => dexesForOrigin(w, o).length > 0);
     if (mode === 'global' || knownElsewhere) {
-      return { protected: true, noWhitelist: true, allowed: EMPTY };
+      return { protected: true, noWhitelist: true, dexes: [], allowed: EMPTY };
     }
-    return { protected: false, allowed: EMPTY };
+    return { protected: false, dexes: [], allowed: EMPTY };
   }
 
-  const dex = o === undefined ? undefined : dexForOrigin(wl, o);
+  const dexes = o === undefined ? [] : dexesForOrigin(wl, o);
   if (mode === 'global') {
-    return { protected: true, dex, allowed: buildAllowed(wl, Object.keys(wl.dexes)) };
+    return { protected: true, dexes, allowed: buildAllowed(wl, Object.keys(wl.dexes)) };
   }
-  if (dex === undefined) return { protected: false, allowed: EMPTY };
-  return { protected: true, dex, allowed: buildAllowed(wl, [dex]) };
+  if (dexes.length === 0) return { protected: false, dexes, allowed: EMPTY };
+  return { protected: true, dexes, allowed: buildAllowed(wl, dexes) };
 }
 
 /** Find which list (if any) an address belongs to in the allowed set. */

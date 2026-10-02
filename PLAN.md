@@ -30,7 +30,7 @@
 - `core/serialize.ts`: Verdict·SignRequest의 bigint ↔ 10진수 문자열 변환 (메시지·storage 경계 전용) + 왕복 테스트
 - **완료 기준**: typecheck 통과, 직렬화 왕복 테스트 통과
 
-### [x] 03 `feat(core): whitelist schema and loader`
+### [x] 03 `feat(core): whitelist schema and loader` — 07e1eca
 - `core/whitelist/schema.ts` (zod): dexes(origins/routers/spenders/others/feeRecipients), utilities, 엔트리 `version`(선택)
 - `core/whitelist/loader.ts`
   - `getWhitelist(chainId)`
@@ -41,13 +41,13 @@
 - 주소는 `getAddress()`로 정규화해서 비교
 - **완료 기준**: 더미 JSON으로 scoped/global, 일치/불일치 origin, 화이트리스트 없는 체인(protected/비protected origin) 테스트 통과
 
-### [ ] 04 `feat(core): add Uniswap & CoW whitelist for mainnet/sepolia`
+### [x] 04 `feat(core): add Uniswap & CoW whitelist for mainnet/sepolia`
 - `1.json`, `11155111.json` 작성. 공식 문서에서만 수집하고 엔트리마다 `source` 기입
 - Uniswap: 공식 프론트엔드가 쓰는 router 전 버전, Permit2, (사용 시) UniswapX reactor
 - Uniswap others: 공식 프론트엔드가 swap 외에 직접 호출하는 컨트랙트 (NonfungiblePositionManager, V4 PositionManager 등)
 - CoW: GPv2Settlement, CoWSwapEthFlow(routers), GPv2VaultRelayer(spenders)
 - utilities: WETH
-- Sepolia JSON에만 playground origin `http://localhost:5173` 추가
+- Sepolia JSON에만 playground origin `http://localhost:5173` 추가 (uniswap·cow 양쪽 origins에 넣고, 여러 DEX에 매칭되는 origin은 합집합으로 허용)
 - 확인하지 못한 주소는 `verified: false`로 두고 커밋 본문에 목록 기재
 - **완료 기준**: 스키마 검증 테스트 통과. **사람이 주소를 검수한 뒤 다음 단계로** (리뷰 포인트 ①)
 

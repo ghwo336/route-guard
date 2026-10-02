@@ -62,7 +62,7 @@ describe('resolveScope', () => {
   it('scoped + matching origin: only that DEX + utilities', () => {
     const s = resolveScope('https://a.example', 1, 'scoped', whitelists);
     expect(s.protected).toBe(true);
-    expect(s.dex).toBe('a');
+    expect(s.dexes).toEqual(['a']);
     expect(lookup(s.allowed, A.dexARouter as `0x${string}`)?.role).toBe('routers');
     expect(lookup(s.allowed, A.dexAFee as `0x${string}`)?.role).toBe('feeRecipients');
     expect(lookup(s.allowed, A.weth as `0x${string}`)?.role).toBe('utilities');
@@ -80,13 +80,13 @@ describe('resolveScope', () => {
       false,
     );
     expect(resolveScope('http://a.example', 1, 'scoped', whitelists).protected).toBe(false);
-    expect(resolveScope('https://a.example/swap', 1, 'scoped', whitelists).dex).toBe('a');
+    expect(resolveScope('https://a.example/swap', 1, 'scoped', whitelists).dexes).toEqual(['a']);
   });
 
   it('global: every DEX for any origin', () => {
     const s = resolveScope('https://anything.example', 1, 'global', whitelists);
     expect(s.protected).toBe(true);
-    expect(s.dex).toBeUndefined();
+    expect(s.dexes).toEqual([]);
     expect(lookup(s.allowed, A.dexARouter as `0x${string}`)?.entry.dex).toBe('a');
     expect(lookup(s.allowed, A.dexBSpender as `0x${string}`)?.entry.dex).toBe('b');
   });
@@ -101,6 +101,20 @@ describe('resolveScope', () => {
       protected: true,
       noWhitelist: true,
     });
+  });
+
+  it('an origin listed by several DEXes gets the union', () => {
+    const multi = parseWhitelist({
+      ...wl,
+      dexes: {
+        a: { ...wl.dexes.a, origins: ['http://localhost:5173'] },
+        b: { ...wl.dexes.b, origins: ['http://localhost:5173'] },
+      },
+    });
+    const s = resolveScope('http://localhost:5173', 1, 'scoped', { 1: multi });
+    expect(s.dexes).toEqual(['a', 'b']);
+    expect(lookup(s.allowed, A.dexARouter as `0x${string}`)?.entry.dex).toBe('a');
+    expect(lookup(s.allowed, A.dexBRouter as `0x${string}`)?.entry.dex).toBe('b');
   });
 
   it('handles junk origins', () => {
