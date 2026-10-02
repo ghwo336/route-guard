@@ -67,7 +67,7 @@
   - 주문 취소(EthFlow `invalidateOrder`, Settlement `invalidateOrder`) → `RouterNoop`
 - **완료 기준**: 주문·EthFlow 각각 receiver = 0x0 / 본인 / 타인 케이스, setPreSignature 디코딩 테스트
 
-### [x] 07 `feat(core): decode router calls`
+### [x] 07 `feat(core): decode router calls` — 48cbb44
 - `core/decode/router.ts`
   - UniversalRouter `execute`: command별 recipient, tokenOut, amountOutMin
   - SwapRouter02: exactInput*/exactOutput* + `multicall` 재귀
@@ -76,7 +76,7 @@
   - 최소 수령량은 호출 전체 기준으로 계산: universal-router-sdk / router-sdk 소스에서 분할 경로·네이티브 출력 시 개별 swap min을 0으로 두고 최종 SWEEP/UNWRAP에서 검사하는지 확인하고, "최종 수령 단계의 min"을 `minAmountOut`으로 낸다. 확인 결과(소스 링크 포함)를 커밋 본문과 AGENTS.md 8.3에 반영해 R10 확정
 - **완료 기준**: recipient = 본인 / 공격자 / 센티널 / 디코딩 불가, 최종 min = 0, 개별 min = 0이지만 최종 min > 0(정상) 케이스 테스트 통과
 
-### [ ] 08 `feat(core): decode misc + request dispatcher`
+### [x] 08 `feat(core): decode misc + request dispatcher`
 - `core/decode/misc.ts`: transfer, transferFrom, WETH deposit/withdraw
 - `core/decode/index.ts`: 메서드별 분기 (`eth_sendTransaction`, `wallet_sendCalls`, `eth_signTypedData_v4`, `eth_signTypedData_v3`, `eth_signTypedData`(v1 → `OpaqueSign`), `personal_sign`, `eth_sign`)
 - `to`가 `others`면 `Other` 반환 (calldata 미해석)
