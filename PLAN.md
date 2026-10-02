@@ -21,7 +21,7 @@
 
 ## Phase 1. core (브라우저 없이 완성)
 
-### [x] 02 `feat(core): define types`
+### [x] 02 `feat(core): define types` — 6b0ccc9
 - `core/types.ts`
   - `SignRequest`: method, params, chainId, from, **origin**
   - `Mode`: `'scoped' | 'global'`
@@ -30,8 +30,8 @@
 - `core/serialize.ts`: Verdict·SignRequest의 bigint ↔ 10진수 문자열 변환 (메시지·storage 경계 전용) + 왕복 테스트
 - **완료 기준**: typecheck 통과, 직렬화 왕복 테스트 통과
 
-### [ ] 03 `feat(core): whitelist schema and loader`
-- `core/whitelist/schema.ts` (zod): dexes(origins/routers/spenders/others), utilities
+### [x] 03 `feat(core): whitelist schema and loader`
+- `core/whitelist/schema.ts` (zod): dexes(origins/routers/spenders/others/feeRecipients), utilities, 엔트리 `version`(선택)
 - `core/whitelist/loader.ts`
   - `getWhitelist(chainId)`
   - `resolveScope(origin, chainId, mode)` → `{ protected: boolean, noWhitelist?: boolean, dex?: string, allowed: { routers, spenders, utilities, others } }`
