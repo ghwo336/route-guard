@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { analyze } from './analyze';
-import { USER } from './fixtures/addresses';
+import { ATTACKER, TOKENS, USER } from './fixtures/addresses';
+import { cowOrder } from './fixtures/typedData';
 import { buildScenarios, PLAYGROUND_ORIGIN, SCENARIO_CHAIN_ID } from './fixtures/scenarios';
 import type { Mode, SignRequest } from './types';
 import { BUNDLED_WHITELISTS } from './whitelist';
@@ -91,6 +92,35 @@ describe('warning labels for the offending address (display only)', () => {
     expect(v('S11').summary).toBe(
       'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0이 받습니다.',
     );
+  });
+
+  it('CoW order with receiver 0x0 and a fake settlement: owner shown as 본인, settlement flagged', () => {
+    const r = analyze(
+      {
+        method: 'eth_signTypedData_v4',
+        params: [
+          USER,
+          JSON.stringify(
+            cowOrder({
+              chainId: SCENARIO_CHAIN_ID,
+              receiver: '0x0000000000000000000000000000000000000000',
+              sellToken: TOKENS.sepoliaUSDC,
+              buyToken: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+              verifyingContract: ATTACKER,
+            }),
+          ),
+        ],
+        chainId: SCENARIO_CHAIN_ID,
+        origin: PLAYGROUND_ORIGIN,
+      },
+      BUNDLED_WHITELISTS,
+      'scoped',
+    );
+    expect(r.ruleIds).toEqual(['R5']); // unchanged verdict
+    expect(r.details.notes).toEqual({
+      target: { badge: '⚠ 미등록', tone: 'warn' },
+      recipients: [{ display: '본인 (주문자, receiver=0x0)', tone: 'ok' }],
+    });
   });
 
   it('S1: everything reads as normal', () => {

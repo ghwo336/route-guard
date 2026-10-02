@@ -1,6 +1,6 @@
 import { getAddress, type Address } from 'viem';
 import { isSentinel } from '../decode/router';
-import { sameAddress } from '../decode/util';
+import { sameAddress, ZERO_ADDRESS } from '../decode/util';
 import type { AddressNote, DecodedAction, VerdictDetails } from '../types';
 import { lookup, type AllowedSet, type ScopedEntry } from '../whitelist/loader';
 import { recipientLabel } from './sentinel';
@@ -19,8 +19,18 @@ export function officialLabel(entry: ScopedEntry): string {
   return `공식 ${dex}${entry.label}${entry.verified ? '' : ' (미검증)'}`;
 }
 
-/** Same notion of "fine" as the rules: self, router sentinel, or an official fee recipient. */
-export function recipientNote(address: Address, ctx: NoteContext): AddressNote {
+/**
+ * Same notion of "fine" as the rules: self, router sentinel, or an official fee recipient.
+ * For CoW orders a zero receiver means "same as the order owner" (GPv2Order.RECEIVER_SAME_AS_OWNER).
+ */
+export function recipientNote(
+  address: Address,
+  ctx: NoteContext,
+  opts: { zeroIsOwner?: boolean } = {},
+): AddressNote {
+  if (opts.zeroIsOwner && sameAddress(address, ZERO_ADDRESS)) {
+    return { display: '본인 (주문자, receiver=0x0)', tone: 'ok' };
+  }
   if (isSentinel(address)) return { display: recipientLabel(address), tone: 'ok' };
   const fee = ctx.allowed.feeRecipients.get(getAddress(address));
   if (fee) return { badge: `${officialLabel(fee)} (수수료 수령)`, tone: 'ok' };
@@ -84,7 +94,9 @@ export function buildNotes(
     if (t) notes.target = t;
   }
   if (details.spender) notes.spender = spenderNote(details.spender, ctx, { routersAllowed });
-  if (details.recipients?.length)
-    notes.recipients = details.recipients.map((r) => recipientNote(r, ctx));
+  const zeroIsOwner = action.kind === 'cowOrder' || action.kind === 'cowEthFlowOrder';
+  if (details.recipients?.length) {
+    notes.recipients = details.recipients.map((r) => recipientNote(r, ctx, { zeroIsOwner }));
+  }
   return notes;
 }

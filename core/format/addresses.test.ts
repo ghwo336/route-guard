@@ -53,6 +53,46 @@ describe('recipientNote', () => {
   });
 });
 
+describe('recipientNote: CoW receiver 0x0', () => {
+  const ZERO = '0x0000000000000000000000000000000000000000';
+  it('is the order owner for CoW orders only', () => {
+    expect(recipientNote(ZERO, ctx, { zeroIsOwner: true })).toEqual({
+      display: '본인 (주문자, receiver=0x0)',
+      tone: 'ok',
+    });
+    expect(recipientNote(ZERO, ctx)).toEqual({ badge: '⚠ 본인 아님', tone: 'warn' });
+  });
+
+  it('buildNotes applies it to CoW orders and EthFlow orders', () => {
+    const base: VerdictDetails = {
+      origin: 'x',
+      protected: true,
+      method: 'm',
+      chainId: 1,
+      recipients: [ZERO],
+    };
+    const order: DecodedAction = {
+      kind: 'cowOrder', verifyingContract: ATTACKER, receiver: ZERO,
+      sellToken: USDC, buyToken: WETH, sellAmount: 1n, buyAmount: 1n,
+    }; // prettier-ignore
+    expect(buildNotes({ ...base, target: ATTACKER }, order, ctx)).toEqual({
+      target: { badge: '⚠ 미등록', tone: 'warn' },
+      recipients: [{ display: '본인 (주문자, receiver=0x0)', tone: 'ok' }],
+    });
+    const flow: DecodedAction = {
+      kind: 'cowEthFlowOrder',
+      to: ATTACKER,
+      receiver: ZERO,
+      buyToken: USDC,
+      sellAmount: 1n,
+      buyAmount: 1n,
+    };
+    expect(buildNotes(base, flow, ctx)?.recipients).toEqual([
+      { display: '본인 (주문자, receiver=0x0)', tone: 'ok' },
+    ]);
+  });
+});
+
 describe('spenderNote', () => {
   it('official spenders; routers only for Permit2', () => {
     expect(spenderNote(PERMIT2, ctx, { routersAllowed: false })).toEqual({
