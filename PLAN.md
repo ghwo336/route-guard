@@ -21,12 +21,12 @@
 
 ## Phase 1. core (브라우저 없이 완성)
 
-### [ ] 02 `feat(core): define types`
+### [x] 02 `feat(core): define types`
 - `core/types.ts`
   - `SignRequest`: method, params, chainId, from, **origin**
   - `Mode`: `'scoped' | 'global'`
   - `RiskLevel`, `Verdict` (AGENTS.md 9장 형태)
-  - `DecodedAction` 유니온: `Approve | SetApprovalForAll | Permit | Permit2 | CowOrder | CowEthFlowOrder | CowPreSignature | RouterSwap | Utility | Other | Transfer | UnknownCall | OpaqueSign | UnknownTypedData`
+  - `DecodedAction` 유니온: `Approve | SetApprovalForAll | Permit | Permit2 | CowOrder | CowEthFlowOrder | CowPreSignature | RouterCall | RouterNoop | Utility | Other | Transfer | UnknownCall | OpaqueSign | UnknownTypedData`
 - `core/serialize.ts`: Verdict·SignRequest의 bigint ↔ 10진수 문자열 변환 (메시지·storage 경계 전용) + 왕복 테스트
 - **완료 기준**: typecheck 통과, 직렬화 왕복 테스트 통과
 
