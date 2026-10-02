@@ -101,14 +101,15 @@
 
 ## Phase 2. 확장 연결
 
-### [x] 11 `feat(inject): wrap EIP-1193 providers (log only)`
+### [x] 11 `feat(inject): wrap EIP-1193 providers (log only)` — b5d9461
 - `entrypoints/inject.content.ts` (WXT 명명 규칙) + `lib/inject/`: MAIN world, `document_start`
 - `window.ethereum` + EIP-6963 announce 이벤트로 들어오는 provider 래핑, `WeakSet`으로 중복 방지, 레거시 `send`/`sendAsync` 처리
 - 이 단계에서는 감시 대상 메서드를 **콘솔에 찍기만 하고** 그대로 통과
 - **완료 기준**: MetaMask, Rabby에서 Uniswap 스왑 시 콘솔에 요청이 찍히고 기존 동작이 깨지지 않음
 
-### [ ] 12 `feat(bridge): inject ↔ content ↔ background messaging`
+### [x] 12 `feat(bridge): inject ↔ content ↔ background messaging`
 - 요청 id(UUID)를 붙여 postMessage → runtime.sendMessage → 응답 매칭
+- inject ↔ content는 document_start에 한 번만 넘긴 private `MessagePort`로 통신 (페이지가 결정 메시지를 위조하지 못하게). 직렬화는 content(ISOLATED)에서
 - origin은 content script의 `location.origin`(또는 `sender.origin`)으로 붙임. 페이지가 보낸 값은 무시
 - 메시지 source 검증, **분석 타임아웃** 처리 (요청 → Verdict 수신까지, 넘으면 R15)
 - bigint는 `core/serialize.ts`로 직렬화해서 주고받음
