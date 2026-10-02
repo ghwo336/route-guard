@@ -167,10 +167,10 @@
 - 디코딩할 수 없는 witness 타입(Relay 등)은 R9 MEDIUM
 - S11 (UniswapX recipient = ATTACKER → HIGH R8) 추가
 
-### [x] 20 `test(e2e): add Playwright e2e (pnpm e2e)`
+### [x] 20 `test(e2e): add Playwright e2e (pnpm e2e)` — 020dddf
 - 스텁 지갑 + 빌드한 확장으로 경고 흐름과 playground S0–S11 검증
 
-### [ ] 21 `docs: note R10 is a bypassable heuristic`
+### [x] 21 `docs: note R10 is a bypassable heuristic`
 - README 한계: R10은 1 wei 등으로 우회 가능한 보조 휴리스틱
 
 ---

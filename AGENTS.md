@@ -46,6 +46,7 @@ DEX 프론트엔드가 이미 변조됐다고 가정한다. 사용자가 서명�
   - `eth_signTypedData`(v1)는 내용을 해석하지 않고 MEDIUM(R13)으로만 처리한다.
   - UniswapX `RelayOrder` 등 해석하지 않는 주문 타입은 받는 주소를 확인하지 않고 MEDIUM(R9)으로만 처리한다.
   - typed data의 `domain.chainId`는 현재 체인과 비교하지 않는다.
+  - R10은 min이 0인지만 보는 보조 휴리스틱이다. 1 wei 같은 무의미한 min으로 우회할 수 있다(가격 조회 금지 정책상 적정 min은 판단하지 않는다).
 
 ## 4. 기술 스택
 
