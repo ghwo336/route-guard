@@ -7,6 +7,7 @@ import type {
   TokenAmount,
 } from '../types';
 import type { ParsedTypedData } from './typedData';
+import { decodeUniswapXWitness } from './uniswapx';
 import { asAddress, isRecord, toBigInt } from './util';
 
 const APPROVAL_ABI = parseAbi([
@@ -68,13 +69,16 @@ export function decodePermit2(td: ParsedTypedData): Permit2Action | undefined {
   const spender = asAddress(td.message.spender);
   const permitted = tokenAmounts(td.message.details ?? td.message.permitted);
   if (!spender || !permitted || permitted.length === 0) return undefined;
-  return {
+  const action: Permit2Action = {
     kind: 'permit2',
     primaryType: td.primaryType,
     verifyingContract: td.verifyingContract,
     spender,
     permitted,
   };
+  const witness = decodeUniswapXWitness(td);
+  if (witness) action.witness = witness;
+  return action;
 }
 
 /** EIP-2612 `Permit`, plus the DAI-style variant (`holder`, `allowed`). */

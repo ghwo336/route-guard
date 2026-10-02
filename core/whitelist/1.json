@@ -84,6 +84,12 @@
           "verified": true
         },
         {
+          "address": "0x0000000015757c461808EA25Eb309638B62681cf",
+          "label": "V3DutchOrderReactor (UniswapX)",
+          "source": "https://github.com/Uniswap/sdks/blob/main/sdks/uniswapx-sdk/src/constants.ts",
+          "verified": false
+        },
+        {
           "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
           "label": "NonfungiblePositionManager",
           "source": "https://github.com/Uniswap/docs/blob/main/content/protocols/v3/deployments/v3-ethereum-deployments.mdx",

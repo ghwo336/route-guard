@@ -13,9 +13,9 @@ const toRequest = (s: (typeof scenarios)[number], origin: string): SignRequest =
   origin,
 });
 
-describe('AGENTS.md 11장 시나리오 S0–S10', () => {
-  it('covers S0..S10 exactly', () => {
-    expect(scenarios.map((s) => s.id)).toEqual(Array.from({ length: 11 }, (_, i) => `S${i}`));
+describe('AGENTS.md 11장 시나리오 S0–S11', () => {
+  it('covers S0..S11 exactly', () => {
+    expect(scenarios.map((s) => s.id)).toEqual(Array.from({ length: 12 }, (_, i) => `S${i}`));
   });
 
   it.each(scenarios.map((s) => [s.id, s.title, s] as const))('%s %s', (_, __, s) => {

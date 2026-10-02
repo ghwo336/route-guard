@@ -3,7 +3,7 @@ import type { RiskLevel, RuleId, SignRequest } from '../types';
 import { ATTACKER, TOKENS } from './addresses';
 import * as c from './calldata';
 import * as r from './router';
-import { cowOrder, permit2Single } from './typedData';
+import { cowOrder, permit2Single, uniswapXOrder } from './typedData';
 import { wl } from './whitelist';
 
 /**
@@ -141,6 +141,24 @@ export function buildScenarios(account: Address): Scenario[] {
       actual: 'approve(ATTACKER, 0)',
       request: tx(USDC, c.approve(ATTACKER, 0n)),
       expected: { level: 'LOW', ruleIds: ['R4'] },
+    },
+    {
+      id: 'S11',
+      title: 'UniswapX 결과 탈취',
+      actual: 'UniswapX 주문(공식 reactor), output recipient = ATTACKER',
+      request: typed(
+        uniswapXOrder({
+          chainId: CHAIN,
+          reactor: wl(CHAIN, 'uniswap', 'V2DutchOrderReactor (UniswapX)'),
+          swapper: account,
+          tokenIn: USDC,
+          amountIn: AMOUNT_IN.toString(),
+          tokenOut: WETH,
+          minOut: MIN_ETH_OUT.toString(),
+          recipient: ATTACKER,
+        }),
+      ),
+      expected: { level: 'HIGH', ruleIds: ['R1', 'R8'] },
     },
   ];
 }

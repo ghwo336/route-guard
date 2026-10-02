@@ -4,7 +4,13 @@ import { analyze } from './analyze';
 import { ATTACKER, TOKENS, USER } from './fixtures/addresses';
 import * as c from './fixtures/calldata';
 import * as r from './fixtures/router';
-import { cowOrder, eip2612Permit, permit2Batch, permit2Single } from './fixtures/typedData';
+import {
+  cowOrder,
+  eip2612Permit,
+  permit2Batch,
+  permit2Single,
+  uniswapXOrder,
+} from './fixtures/typedData';
 import { wl } from './fixtures/whitelist';
 import { byRisk, evaluateAction, maxLevel } from './rules';
 import type { DecodedAction, SignRequest } from './types';
@@ -168,6 +174,97 @@ describe('approvals R1-R4', () => {
       ['R2'],
     );
     expect(v.summary).toContain('무제한');
+  });
+});
+
+describe('UniswapX orders', () => {
+  const REACTOR = wl(1, 'uniswap', 'V2DutchOrderReactor (UniswapX)');
+  const order = (recipient: Address, extra: Partial<Parameters<typeof uniswapXOrder>[0]> = {}) =>
+    sign(
+      uniswapXOrder({
+        chainId: 1,
+        reactor: REACTOR,
+        swapper: USER,
+        tokenIn: USDC,
+        amountIn: '100000000',
+        tokenOut: WETH,
+        minOut: '25000000000000000',
+        recipient,
+        ...extra,
+      }),
+    );
+
+  it('normal order: recipient self, fee output to the fee recipient → LOW', () => {
+    const v = expectRule(order(USER, { fee: { recipient: FEE, amount: '1' } }), 'LOW', ['R1']);
+    expect(v.details).toMatchObject({
+      recipients: [USER, FEE],
+      tokenOut: WETH,
+      minAmountOut: 25000000000000000n,
+    });
+  });
+
+  it('R8: output to the attacker', () => {
+    const v = expectRule(order(ATTACKER), 'HIGH', ['R1', 'R8']);
+    expect(v.summary).toBe(
+      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0가 받습니다. (외 1건)',
+    );
+  });
+
+  it('R8 + R2: attacker reactor and attacker recipient', () => {
+    expectRule(order(ATTACKER, { reactor: ATTACKER }), 'HIGH', ['R2', 'R8']);
+  });
+
+  it('R9: order type we do not decode', () => {
+    const v = expectRule(order(USER, { orderType: 'RelayOrder' }), 'MEDIUM', ['R1', 'R9']);
+    expect(v.summary).toContain('RelayOrder');
+    const o = uniswapXOrder({
+      chainId: 1,
+      reactor: REACTOR,
+      swapper: USER,
+      tokenIn: USDC,
+      amountIn: '1',
+      tokenOut: WETH,
+      minOut: '1',
+      recipient: USER,
+    });
+    const untyped = {
+      ...o,
+      types: {
+        ...o.types,
+        PermitWitnessTransferFrom: o.types.PermitWitnessTransferFrom.filter(
+          (f) => f.name !== 'witness',
+        ),
+      },
+    };
+    expect(run(sign(untyped)).summary).toContain('UniswapX 주문(witness)');
+  });
+
+  it('R9: signer unknown', () => {
+    const o = uniswapXOrder({
+      chainId: 1,
+      reactor: REACTOR,
+      swapper: USER,
+      tokenIn: USDC,
+      amountIn: '1',
+      tokenOut: WETH,
+      minOut: '1',
+      recipient: USER,
+    });
+    expectRule(
+      { method: 'eth_signTypedData_v4', params: ['not-an-address', o], chainId: 1, origin: UNI },
+      'MEDIUM',
+      ['R13'],
+    );
+    const allowed = resolveScope(UNI, 1, 'scoped', BUNDLED_WHITELISTS).allowed;
+    const a: DecodedAction = {
+      kind: 'permit2', primaryType: 'PermitWitnessTransferFrom', verifyingContract: PERMIT2, spender: REACTOR,
+      permitted: [{ token: USDC, amount: 1n }], witness: { orderType: 'V2DutchOrder', recipients: [USER] },
+    }; // prettier-ignore
+    expect(evaluateAction(a, { allowed }).hits.map((h) => h.ruleId)).toEqual(['R1', 'R9']);
+    const noRecipients: DecodedAction = { ...a, witness: {} } as DecodedAction;
+    expect(evaluateAction(noRecipients, { allowed, signer: USER }).hits[1]?.message).toContain(
+      '수령 주소 없음',
+    );
   });
 });
 

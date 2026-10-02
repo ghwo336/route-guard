@@ -1,7 +1,7 @@
 import { encodeFunctionData, parseAbi } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { ATTACKER, TOKENS, USER } from '../fixtures/addresses';
-import { eip2612Permit, permit2Batch, permit2Single, permit2Witness } from '../fixtures/typedData';
+import { eip2612Permit, permit2Batch, permit2Single, uniswapXOrder } from '../fixtures/typedData';
 import { wl } from '../fixtures/whitelist';
 import { decodeApprovalTx, decodePermit, decodePermit2 } from './approval';
 import { parseTypedData, splitTypedDataParams } from './typedData';
@@ -105,15 +105,33 @@ describe('decodePermit2', () => {
     expect(decodePermit2(td)?.permitted.map((p) => p.token)).toEqual([USDC, TOKENS.nft]);
   });
 
-  it('PermitWitnessTransferFrom (UniswapX)', () => {
+  it('PermitWitnessTransferFrom (UniswapX V2DutchOrder) with order recipients', () => {
     const reactor = wl(1, 'uniswap', 'V2DutchOrderReactor (UniswapX)');
     const td = parseTypedData(
-      permit2Witness({ chainId: 1, token: USDC, spender: reactor, amount: '100000000' }),
+      uniswapXOrder({
+        chainId: 1,
+        reactor,
+        swapper: USER,
+        tokenIn: USDC,
+        amountIn: '100000000',
+        tokenOut: TOKENS.nft,
+        minOut: '42',
+        recipient: USER,
+        fee: { recipient: ATTACKER, amount: '1' },
+      }),
     )!;
     expect(decodePermit2(td)).toMatchObject({
       primaryType: 'PermitWitnessTransferFrom',
       spender: reactor,
       permitted: [{ token: USDC, amount: 100000000n }],
+      witness: {
+        orderType: 'V2DutchOrder',
+        reactor,
+        swapper: USER,
+        recipients: [USER, ATTACKER],
+        tokenOut: TOKENS.nft,
+        minAmountOut: 42n,
+      },
     });
   });
 

@@ -96,8 +96,8 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 | R6 | 주문 | CoW 주문 / EthFlow 주문의 receiver가 0x0도 본인도 아님 | **HIGH** |
 | R16 | 주문 | CoW `setPreSignature` (주문 내용 확인 불가) | MEDIUM |
 | R7 | router | 화이트리스트 router/utility 호출, recipient가 전부 본인·센티널·feeRecipient. 또는 `others` 호출 | LOW |
-| R8 | router | 화이트리스트 router인데 recipient 중 하나가 본인이 아님 | **HIGH** |
-| R9 | router | recipient 디코딩 실패 (모르는 command 등) | MEDIUM |
+| R8 | router | 화이트리스트 router인데 recipient 중 하나가 본인이 아님. UniswapX 주문의 출력 recipient도 같음 | **HIGH** |
+| R9 | router | recipient 디코딩 실패 (모르는 command, 해석하지 않는 UniswapX 주문 타입 등) | MEDIUM |
 | R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 | MEDIUM |
 | R11 | 기타 | 미등록 `to`에 calldata 또는 ETH 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM |
@@ -127,7 +127,7 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 - **멀티시그** 서명 흐름 미지원.
 - **확장 자체의 변조**는 막지 못합니다.
 - **CoW `setPreSignature`**: tx에는 주문 UID만 있어서 receiver를 확인할 수 없습니다(R16 MEDIUM).
-- **UniswapX 주문**: Permit2 witness 서명의 spender(reactor)는 검사하지만, **witness 안의 출력 recipient는 아직 검사하지 않습니다**. reactor가 정상이면 LOW가 나옵니다. (PLAN.md Ideas)
+- **UniswapX 주문**: ExclusiveDutch / V2Dutch / V3Dutch / Priority 주문은 출력 recipient까지 검사하지만, `RelayOrder` 등 그 밖의 주문 타입은 받는 주소를 확인하지 않고 MEDIUM(R9)만 표시합니다.
 - **`others`**(PositionManager 등) 호출은 `to`만 확인하고 calldata 안의 recipient는 해석하지 않습니다. UniversalRouter의 포지션 매니저 command, Across 브리지 command도 해석하지 않습니다(R9).
 - **`eth_signTypedData`(v1)**은 해석하지 않습니다(R13).
 - typed data의 `domain.chainId`는 현재 체인과 비교하지 않습니다.
@@ -151,7 +151,7 @@ pnpm build        # → .output/chrome-mv3
 
 개발 중에는 `pnpm dev`로 확장을 로드한 별도 브라우저를 띄울 수 있습니다(지갑은 그 브라우저에 따로 설치해야 합니다).
 
-### 7.2 playground 시나리오 (S0–S10)
+### 7.2 playground 시나리오 (S0–S11)
 
 ```sh
 pnpm playground   # http://localhost:5173
@@ -176,6 +176,7 @@ pnpm playground   # http://localhost:5173
 | S8 슬리피지 0 | 공식 UniversalRouter, recipient = 본인, minOut = 0 | MEDIUM (R10) |
 | S9 가짜 router | `to` = ATTACKER, 임의 calldata | HIGH (R11) |
 | S10 권한 회수 | `approve(ATTACKER, 0)` | LOW (R4) |
+| S11 UniswapX 결과 탈취 | UniswapX 주문(공식 reactor), output recipient = ATTACKER | HIGH (R1 + R8) |
 
 같은 데이터([core/fixtures/scenarios.ts](core/fixtures/scenarios.ts))로 `pnpm test`가 판정 결과를 검증합니다.
 
@@ -224,7 +225,7 @@ pnpm playground   # http://localhost:5173
 
 ### 7.5 대조 실험 (MetaMask 기본 경고 / Rabby)
 
-같은 S0–S10을 다음 세 조건에서 돌리고, **사용자가 위험을 알아챌 수 있는 표시**가 나오는지 기록합니다.
+같은 S0–S11을 다음 세 조건에서 돌리고, **사용자가 위험을 알아챌 수 있는 표시**가 나오는지 기록합니다.
 
 1. route-guard 끔 + MetaMask (기본 보안 경고)
 2. route-guard 끔 + Rabby
@@ -245,6 +246,7 @@ route-guard를 끄려면 `chrome://extensions`에서 비활성화합니다.
 | S8 | | | MEDIUM |
 | S9 | | | HIGH |
 | S10 | | | LOW |
+| S11 | | | HIGH |
 
 칸에는 "경고 없음 / 일반 경고 / 구체적 경고(주소·금액 표시)"처럼 표시 수준을 적습니다. 지갑 경고는 버전에 따라 달라지므로 **지갑 버전과 날짜**를 함께 기록하세요.
 
@@ -262,7 +264,7 @@ pnpm playground
 | 경로 | 내용 |
 |---|---|
 | `core/` | 순수 판정 로직: 타입, 화이트리스트(JSON + zod), 디코더(approval / cow / router / misc), 규칙, `analyze()` |
-| `core/fixtures/` | 테스트·playground 공용 fixture (시나리오 S0–S10) |
+| `core/fixtures/` | 테스트·playground 공용 fixture (시나리오 S0–S11) |
 | `lib/inject/` | provider 래핑, 보류(guard), inject 쪽 bridge client |
 | `lib/bridge/` | 메시지 프로토콜(zod) |
 | `lib/background/` | pending 관리(controller), 로그 |

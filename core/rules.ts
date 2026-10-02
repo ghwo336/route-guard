@@ -229,6 +229,33 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           message: `서명 대상(verifyingContract ${vc})이 공식 Permit2가 아닙니다.`,
         });
       }
+      const w = action.witness;
+      if (w) {
+        const name = w.orderType ?? 'witness';
+        if (w.error !== undefined || w.recipients === undefined) {
+          hits.push({
+            ruleId: 'R9',
+            level: 'MEDIUM',
+            message: `UniswapX 주문(${name})의 받는 주소를 확인할 수 없습니다 (${w.error ?? '수령 주소 없음'}).`,
+          });
+        } else {
+          const { bad, unverifiable } = recipientsCheck(ctx, w.recipients);
+          if (bad.length > 0) {
+            hits.push({
+              ruleId: 'R8',
+              level: 'HIGH',
+              message: `UniswapX 주문(${name})의 결과물 일부를 본인이 아닌 ${bad.map(shortAddress).join(', ')}가 받습니다.`,
+            });
+          }
+          if (unverifiable) {
+            hits.push({
+              ruleId: 'R9',
+              level: 'MEDIUM',
+              message: '수령 주소를 확인할 수 없습니다.',
+            });
+          }
+        }
+      }
       return {
         hits,
         details: {
@@ -236,6 +263,9 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           spender: action.spender,
           token: first.token,
           amount: amountOf(first.amount),
+          recipients: w?.recipients,
+          tokenOut: w?.tokenOut,
+          minAmountOut: w?.minAmountOut,
           matchedDex: dexOf(allowed, action.spender),
         },
       };

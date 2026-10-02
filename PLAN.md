@@ -159,10 +159,10 @@
 
 ## Phase 4. 리뷰 반영
 
-### [x] 18 `chore(core): mark UR 2.2.0 and SwapProxy as unverified`
+### [x] 18 `chore(core): mark UR 2.2.0 and SwapProxy as unverified` — c95378a
 - 실사이트에서 `to` 주소를 확인하기 전까지 `verified: false`. 판정에는 그대로 쓰되, 표시에 "(미검증)"을 붙인다
 
-### [ ] 19 `feat(core): decode UniswapX order recipients`
+### [x] 19 `feat(core): decode UniswapX order recipients`
 - Permit2 witness 주문(ExclusiveDutch / V2Dutch / V3Dutch / Priority)의 `outputs[].recipient` 디코딩 → 본인·feeRecipients가 아니면 R8
 - 디코딩할 수 없는 witness 타입(Relay 등)은 R9 MEDIUM
 - S11 (UniswapX recipient = ATTACKER → HIGH R8) 추가
@@ -192,6 +192,5 @@
 - 온체인 화이트리스트 레지스트리 (멀티시그 + 타임락): 현재 사용하지 않기로 결정
 - 트랜잭션 시뮬레이션으로 잔고 변화 표시
 - 지원 DEX/체인 확장
-- UniswapX 주문 witness의 출력 recipient 검사 (현재는 reactor spender만 검사)
 - typed data `domain.chainId`와 현재 체인 비교
 - e2e 테스트(Playwright + 스텁 지갑)를 저장소에 포함 (현재는 저장소 밖에서 1회 실행)

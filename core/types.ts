@@ -108,12 +108,25 @@ export type PermitAction = {
   amount: bigint;
 };
 
+/** The order carried in a Permit2 witness (UniswapX). `error` when it could not be read. */
+export type UniswapXWitness = {
+  orderType?: string;
+  reactor?: Address;
+  swapper?: Address;
+  recipients?: Address[];
+  tokenOut?: Address;
+  minAmountOut?: bigint;
+  error?: string;
+};
+
 export type Permit2Action = {
   kind: 'permit2';
   primaryType: string;
   verifyingContract?: Address;
   spender: Address;
   permitted: TokenAmount[];
+  /** Present for witness signatures (UniswapX orders). */
+  witness?: UniswapXWitness;
 };
 
 /** CoW Protocol order (typed data). */

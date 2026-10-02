@@ -82,13 +82,31 @@ export function permit2Batch(opts: { chainId: number; tokens: Address[]; spender
   };
 }
 
-/** Permit2 SignatureTransfer with witness, as used for UniswapX orders. */
-export function permit2Witness(opts: {
+/**
+ * UniswapX order: Permit2 PermitWitnessTransferFrom whose witness is the order
+ * (type definitions from @uniswap/uniswapx-sdk src/order/V2DutchOrder.ts).
+ * Outputs: the swap output to `recipient`, plus an optional fee output.
+ */
+export function uniswapXOrder(opts: {
   chainId: number;
-  token: Address;
-  spender: Address;
-  amount: string;
+  reactor: Address;
+  swapper: Address;
+  tokenIn: Address;
+  amountIn: string;
+  tokenOut: Address;
+  minOut: string;
+  recipient: Address;
+  fee?: { recipient: Address; amount: string };
+  /** Witness type name; anything but V2DutchOrder keeps the V2 shape (for negative tests). */
+  orderType?: string;
 }) {
+  const orderType = opts.orderType ?? 'V2DutchOrder';
+  const out = (recipient: Address, amount: string) => ({
+    token: opts.tokenOut,
+    startAmount: amount,
+    endAmount: amount,
+    recipient,
+  });
   return {
     types: {
       EIP712Domain: EIP712_DOMAIN_NAMED,
@@ -97,11 +115,33 @@ export function permit2Witness(opts: {
         { name: 'spender', type: 'address' },
         { name: 'nonce', type: 'uint256' },
         { name: 'deadline', type: 'uint256' },
-        { name: 'witness', type: 'V2DutchOrder' },
+        { name: 'witness', type: orderType },
       ],
       TokenPermissions: [
         { name: 'token', type: 'address' },
         { name: 'amount', type: 'uint256' },
+      ],
+      [orderType]: [
+        { name: 'info', type: 'OrderInfo' },
+        { name: 'cosigner', type: 'address' },
+        { name: 'baseInputToken', type: 'address' },
+        { name: 'baseInputStartAmount', type: 'uint256' },
+        { name: 'baseInputEndAmount', type: 'uint256' },
+        { name: 'baseOutputs', type: 'DutchOutput[]' },
+      ],
+      OrderInfo: [
+        { name: 'reactor', type: 'address' },
+        { name: 'swapper', type: 'address' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+        { name: 'additionalValidationContract', type: 'address' },
+        { name: 'additionalValidationData', type: 'bytes' },
+      ],
+      DutchOutput: [
+        { name: 'token', type: 'address' },
+        { name: 'startAmount', type: 'uint256' },
+        { name: 'endAmount', type: 'uint256' },
+        { name: 'recipient', type: 'address' },
       ],
     },
     domain: {
@@ -111,11 +151,28 @@ export function permit2Witness(opts: {
     },
     primaryType: 'PermitWitnessTransferFrom',
     message: {
-      permitted: { token: opts.token, amount: opts.amount },
-      spender: opts.spender,
+      permitted: { token: opts.tokenIn, amount: opts.amountIn },
+      spender: opts.reactor,
       nonce: '1',
       deadline: DEADLINE,
-      witness: {},
+      witness: {
+        info: {
+          reactor: opts.reactor,
+          swapper: opts.swapper,
+          nonce: '1',
+          deadline: DEADLINE,
+          additionalValidationContract: '0x0000000000000000000000000000000000000000',
+          additionalValidationData: '0x',
+        },
+        cosigner: '0x0000000000000000000000000000000000000000',
+        baseInputToken: opts.tokenIn,
+        baseInputStartAmount: opts.amountIn,
+        baseInputEndAmount: opts.amountIn,
+        baseOutputs: [
+          out(opts.recipient, opts.minOut),
+          ...(opts.fee ? [out(opts.fee.recipient, opts.fee.amount)] : []),
+        ],
+      },
     },
   };
 }

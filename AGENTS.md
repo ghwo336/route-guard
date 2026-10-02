@@ -44,7 +44,7 @@ DEX 프론트엔드가 이미 변조됐다고 가정한다. 사용자가 서명�
   - CoW `setPreSignature`는 tx만으로 주문 내용(receiver 등)을 알 수 없어서 MEDIUM(R16)까지만 경고한다.
   - `others`(PositionManager 등) 호출은 `to`만 확인하고 calldata 안의 recipient는 해석하지 않는다.
   - `eth_signTypedData`(v1)는 내용을 해석하지 않고 MEDIUM(R13)으로만 처리한다.
-  - UniswapX 주문(Permit2 witness)은 spender(reactor)만 검사하고 witness 안의 출력 recipient는 검사하지 않는다.
+  - UniswapX `RelayOrder` 등 해석하지 않는 주문 타입은 받는 주소를 확인하지 않고 MEDIUM(R9)으로만 처리한다.
   - typed data의 `domain.chainId`는 현재 체인과 비교하지 않는다.
 
 ## 4. 기술 스택
@@ -127,6 +127,7 @@ provider 래핑 대상:
   - `PermitTransferFrom` / `PermitBatchTransferFrom` / `PermitWitnessTransferFrom` → `message.spender`, `permitted`
   - `domain.verifyingContract`가 공식 Permit2 주소인지도 확인한다.
   - Permit2 typed data의 spender는 **해당 DEX의 `routers` + `spenders` 모두** 정상으로 인정한다. (정상 Uniswap은 `PermitSingle.spender` = UniversalRouter)
+  - **UniswapX 주문** = witness가 있는 Permit2 서명. spender(reactor) 검사에 더해 witness 안의 출력 recipient를 꺼낸다(@uniswap/uniswapx-sdk 기준): `ExclusiveDutchOrder`·`PriorityOrder`는 `outputs[]`, `V2DutchOrder`·`V3DutchOrder`는 `baseOutputs[]`. recipient가 본인·`feeRecipients`가 아니면 R8, 해석하지 않는 witness 타입(`RelayOrder` 등)이나 형식 오류는 R9.
 - ⚠️ approve tx의 `to`와 EIP-2612 Permit의 `verifyingContract`는 **토큰 주소**라서 토큰마다 다르다. 이 값은 화이트리스트와 비교하지 않는다. **spender만 비교한다.**
 
 ### 8.2 서명 주문
@@ -173,8 +174,8 @@ RiskLevel: `LOW` | `MEDIUM` | `HIGH`. 여러 규칙이 걸리면 가장 높은 �
 | R6 | 주문 | CoW 주문 또는 EthFlow `createOrder`의 `receiver`가 0x0도 서명자 본인도 아님 | **HIGH** |
 | R16 | 주문 | CoW `setPreSignature` (주문 내용 확인 불가) | MEDIUM |
 | R7 | router | `to`가 화이트리스트 router 또는 utility이고, recipient가 전부 본인·센티널·`feeRecipients`. 또는 `to`가 `others` (calldata 미해석) | LOW |
-| R8 | router | `to`가 화이트리스트 router인데 recipient 중 하나가 본인이 아님 | **HIGH** |
-| R9 | router | router 호출인데 recipient 디코딩 실패 | MEDIUM ("수령 주소 확인 불가") |
+| R8 | router | `to`가 화이트리스트 router인데 recipient 중 하나가 본인이 아님. UniswapX 주문의 출력 recipient도 같음 | **HIGH** |
+| R9 | router | router 호출 또는 UniswapX 주문인데 recipient 디코딩 실패 | MEDIUM ("수령 주소 확인 불가") |
 | R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 (8.3) | MEDIUM ("슬리피지 보호 없음") |
 | R11 | 기타 | 미등록 `to`(routers/spenders/utilities/others 어디에도 없음)에 calldata 또는 ETH value 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM (받는 주소 그대로 표시) |
@@ -265,6 +266,7 @@ type Verdict = {
 | S8 슬리피지 0 | 공식 UniversalRouter, recipient = 본인, minOut = 0 | MEDIUM (R10) |
 | S9 가짜 router | `to` = ATTACKER, 임의 calldata | HIGH (R11) |
 | S10 권한 회수 | `approve(ATTACKER, 0)` | LOW (R4) |
+| S11 UniswapX 결과 탈취 | UniswapX 주문(공식 reactor), output recipient = ATTACKER | HIGH (R1 + R8) |
 
 - `ATTACKER`는 의미 없는 테스트 주소 상수로 둔다.
 - Sepolia 기준이고 실제 자금은 필요 없다. 확장 단계에서 차단하거나 지갑에서 거절하면 된다.
@@ -287,7 +289,7 @@ type Verdict = {
 
 ## 14. 완료 정의 (Definition of Done)
 
-- [ ] playground S0~S10가 기대 결과와 일치
+- [ ] playground S0~S11가 기대 결과와 일치
 - [ ] 실제 app.uniswap.org / swap.cow.fi에서 정상 스왑·승인 시 경고가 뜨지 않음 (오탐 0)
 - [ ] MetaMask, Rabby 둘 다에서 동작 확인 (EIP-6963 경로 포함)
 - [ ] `core/` 테스트 커버리지: rules 100% 분기
