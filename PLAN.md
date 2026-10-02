@@ -92,7 +92,7 @@
 - 사람이 읽는 `summary` 생성 (한국어, 주소 축약)
 - **완료 기준**: 규칙별 테스트, `core/rules.ts` 분기 커버리지 100% (coverage-v8로 확인)
 
-### [x] 10 `test(core): shared scenario fixtures S0–S10`
+### [x] 10 `test(core): shared scenario fixtures S0–S10` — 2c43ca6
 - `core/fixtures/scenarios.ts`: AGENTS.md 11장 표를 데이터로 정의 (요청 + origin + 기대 level + 기대 ruleIds)
 - 같은 fixture를 비 protected origin으로 돌리면 전부 R0이 나오는지 확인하는 테스트 추가
 - **완료 기준**: 전 시나리오가 기대 결과와 일치 (리뷰 포인트 ②: 판정 로직 확정)
@@ -101,8 +101,8 @@
 
 ## Phase 2. 확장 연결
 
-### [ ] 11 `feat(inject): wrap EIP-1193 providers (log only)`
-- `entrypoints/inject.ts`: MAIN world, `document_start`
+### [x] 11 `feat(inject): wrap EIP-1193 providers (log only)`
+- `entrypoints/inject.content.ts` (WXT 명명 규칙) + `lib/inject/`: MAIN world, `document_start`
 - `window.ethereum` + EIP-6963 announce 이벤트로 들어오는 provider 래핑, `WeakSet`으로 중복 방지, 레거시 `send`/`sendAsync` 처리
 - 이 단계에서는 감시 대상 메서드를 **콘솔에 찍기만 하고** 그대로 통과
 - **완료 기준**: MetaMask, Rabby에서 Uniswap 스왑 시 콘솔에 요청이 찍히고 기존 동작이 깨지지 않음
