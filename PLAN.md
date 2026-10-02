@@ -83,7 +83,7 @@
 - 잘못된 입력은 throw하지 않고 `UnknownCall` / `UnknownTypedData` / `OpaqueSign`으로 반환
 - **완료 기준**: 메서드별 분기 테스트, 깨진 JSON·calldata 테스트
 
-### [x] 09 `feat(core): risk rules engine`
+### [x] 09 `feat(core): risk rules engine` — 75ca596
 - `core/rules.ts`: AGENTS.md 9장 R0~R16을 적용 순서대로 구현
   - Permit2 typed data는 해당 DEX의 routers + spenders를 spender로 인정
   - R11(미등록 `to`)은 HIGH, R14는 `resolveScope`의 `noWhitelist` 기준
@@ -92,7 +92,7 @@
 - 사람이 읽는 `summary` 생성 (한국어, 주소 축약)
 - **완료 기준**: 규칙별 테스트, `core/rules.ts` 분기 커버리지 100% (coverage-v8로 확인)
 
-### [ ] 10 `test(core): shared scenario fixtures S0–S10`
+### [x] 10 `test(core): shared scenario fixtures S0–S10`
 - `core/fixtures/scenarios.ts`: AGENTS.md 11장 표를 데이터로 정의 (요청 + origin + 기대 level + 기대 ruleIds)
 - 같은 fixture를 비 protected origin으로 돌리면 전부 R0이 나오는지 확인하는 테스트 추가
 - **완료 기준**: 전 시나리오가 기대 결과와 일치 (리뷰 포인트 ②: 판정 로직 확정)
