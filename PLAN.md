@@ -191,11 +191,11 @@
 ### [x] 24 `fix(ui): pin warning buttons to the bottom` — db704eb
 - 본문만 스크롤, 취소/진행 버튼은 하단 고정. 창 기본 높이 660 → 760
 
-### [x] 25 `feat(format): show token amounts with decimals`
+### [x] 25 `feat(format): show token amounts with decimals` — 59510fd
 - 정적 토큰 메타데이터(`core/format/tokens.json`, 체인별 symbol·decimals). 온체인 조회 금지
 - 아는 토큰은 `100 USDC`, 모르는 토큰은 주소 + "decimals 알 수 없음" + 원시값, `0x0…0`은 "ETH (네이티브)", 무제한은 "무제한"
 
-### [ ] 26 `feat(format): label sentinel recipients`
+### [x] 26 `feat(format): label sentinel recipients`
 - `MSG_SENDER` → "본인 (MSG_SENDER)", `ADDRESS_THIS` → "라우터 내부 보관 (ADDRESS_THIS)" (표시만)
 
 ### [ ] 27 `fix(format): pick Korean particles by final consonant`

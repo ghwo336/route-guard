@@ -1,4 +1,5 @@
 import { formatAmount, tokenLabel } from '@/core/format/amount';
+import { recipientLabel } from '@/core/format/sentinel';
 import type { Verdict } from '@/core/types';
 
 export type Row = { label: string; value: string; mono?: boolean };
@@ -14,7 +15,11 @@ export function verdictRows(v: Verdict): Row[] {
     d.target ? { label: '대상 컨트랙트', value: d.target, mono: true } : undefined,
     d.spender ? { label: '권한 받는 주소 (spender)', value: d.spender, mono: true } : undefined,
     d.recipients?.length
-      ? { label: '받는 주소 (recipient)', value: d.recipients.join('\n'), mono: true }
+      ? {
+          label: '받는 주소 (recipient)',
+          value: d.recipients.map(recipientLabel).join('\n'),
+          mono: true,
+        }
       : undefined,
     d.token ? { label: '토큰', value: token(d.token), mono: true } : undefined,
     d.amount !== undefined

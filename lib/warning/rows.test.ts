@@ -32,9 +32,10 @@ describe('verdictRows', () => {
       '받는 주소 (recipient)', '토큰', '금액', '받을 토큰', '최소 수령량', '규칙',
     ]); // prettier-ignore
     expect(rows.find((r) => r.label === '금액')?.value).toBe('무제한');
-    expect(rows.find((r) => r.label === '받는 주소 (recipient)')?.value.split('\n')).toHaveLength(
-      2,
-    );
+    expect(rows.find((r) => r.label === '받는 주소 (recipient)')?.value.split('\n')).toEqual([
+      '0x3333333333333333333333333333333333333333',
+      '본인 (MSG_SENDER)',
+    ]);
   });
 
   it('minimal verdict', () => {
