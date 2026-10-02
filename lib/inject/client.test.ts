@@ -102,6 +102,16 @@ describe('bridge client', () => {
     expect(h.sent).toHaveLength(2);
   });
 
+  it('fallback also failing → reject instead of hanging', async () => {
+    const h = harness();
+    const c = h.client.check(req);
+    h.reply({ type: 'ack', id: 'id1' });
+    h.fire();
+    h.reply({ type: 'error', id: 'id1', message: 'still broken' });
+    await expect(c.verdict).rejects.toThrow('still broken');
+    await expect(c.decision).resolves.toEqual({ decision: 'reject', reason: 'analysis-failed' });
+  });
+
   it('ignores junk and unknown ids', () => {
     const h = harness();
     h.client.check(req);

@@ -5,5 +5,6 @@ export default defineConfig({
   manifest: {
     name: 'route-guard',
     description: 'Verify what you sign, not what you see.',
+    permissions: ['storage'],
   },
 });

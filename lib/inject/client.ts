@@ -104,6 +104,10 @@ export function createBridgeClient(port: PortLike, deps: ClientDeps) {
         if (p.stage === 'acked') {
           deps.clearTimeout(p.timer);
           onTimeout(msg.id);
+        } else if (p.stage === 'timedOut') {
+          // even the fallback failed: never hang, never pass unchecked
+          p.rejectVerdict(new Error(msg.message));
+          finish(msg.id, p, 'reject', 'analysis-failed');
         }
         return;
     }

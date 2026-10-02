@@ -1,0 +1,118 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #5f6368;
+  --line: #e3e3e3;
+  --high: #c62828;
+  --medium: #b26a00;
+  --low: #2e7d32;
+  --btn: #f1f3f4;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a;
+    --fg: #ececec;
+    --muted: #a0a4a8;
+    --line: #2e3033;
+    --high: #ef5350;
+    --medium: #ffb74d;
+    --low: #66bb6a;
+    --btn: #2a2c2f;
+  }
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+main {
+  padding: 16px;
+  border-top: 6px solid var(--muted);
+}
+main[data-level='HIGH'] {
+  border-top-color: var(--high);
+}
+main[data-level='MEDIUM'] {
+  border-top-color: var(--medium);
+}
+main[data-level='LOW'] {
+  border-top-color: var(--low);
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--muted);
+}
+main[data-level='HIGH'] .badge {
+  background: var(--high);
+}
+main[data-level='MEDIUM'] .badge {
+  background: var(--medium);
+  color: #000;
+}
+h1 {
+  font-size: 16px;
+  line-height: 1.45;
+  margin: 8px 0 12px;
+}
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px 0;
+}
+dt {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+dd {
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+dd.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--btn);
+  color: var(--fg);
+  cursor: pointer;
+}
+button.primary {
+  font-weight: 700;
+  border-color: var(--fg);
+}
+button.danger:not(:disabled) {
+  color: var(--high);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

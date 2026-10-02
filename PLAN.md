@@ -116,16 +116,16 @@
 - background는 `analyze()` 결과만 돌려줌 (UI 없음)
 - **완료 기준**: 콘솔에 Verdict가 찍힘
 
-### [x] 13 `feat(background): hold request until verdict`
+### [x] 13 `feat(background): hold request until verdict` — 59b6ab5
 - inject에서 감시 대상 요청을 Verdict가 올 때까지 보류
 - LOW / R0 → 원본 request 호출. 그 외 → 일단 콘솔 경고 후 통과 (UI는 다음 커밋)
 - chainId는 `eth_chainId`로 조회해 캐시하고, `chainChanged` 이벤트로 갱신
 - **완료 기준**: 보류-재개 흐름에서 dApp이 정상 동작
 
-### [ ] 14 `feat(ui): warning popup window`
+### [x] 14 `feat(ui): warning popup window`
 - `entrypoints/warning/`: `browser.windows.create({ type: 'popup' })`
 - 표시 내용: 레벨, summary, origin, 매칭된 DEX, 대상/spender/recipient, 토큰·금액, (swap이면) 출력 토큰·최소 수령량
-- 버튼: **취소**(기본 포커스), 진행
+- 버튼: **취소**(기본 포커스, Esc), 진행 (HIGH는 1.5초 뒤 활성화)
 - 취소하거나 창을 닫으면 inject에서 `{ code: 4001, message: 'User rejected the request.' }` throw
 - **사용자 결정 대기에는 타임아웃 없음** (분석 타임아웃과 분리). inject 쪽 분석 타임아웃은 Verdict 수신 시점에 해제
 - pending 요청 `{ id, tabId, windowId, verdict, createdAt }`을 `browser.storage.session`에 저장하고, 서비스 워커 재시작 시 복구. 탭이 닫히면 정리

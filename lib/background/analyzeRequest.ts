@@ -1,5 +1,5 @@
 import { analyze } from '@/core/analyze';
-import { deserialize, serialize } from '@/core/serialize';
+import { deserialize } from '@/core/serialize';
 import type { Mode, SignRequest, Verdict } from '@/core/types';
 import { normalizeOrigin, resolveScope, type Whitelists } from '@/core/whitelist/loader';
 import type { WireRequest } from '../bridge/protocol';
@@ -66,5 +66,3 @@ export function runAnalysis(
     ? analyze(req, whitelists, mode)
     : timeoutVerdict(req, whitelists, mode);
 }
-
-export { serialize };

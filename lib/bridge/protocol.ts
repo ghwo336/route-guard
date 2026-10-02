@@ -64,3 +64,21 @@ export type AnalyzeResponse = {
 // background → content (tabs.sendMessage)
 export const DecisionPush = z.object({ type: z.literal('decision'), id, decision: Decision });
 export type DecisionPush = z.infer<typeof DecisionPush>;
+
+// warning page → background
+export const WarningDecision = z.object({ type: z.literal('decide'), id, decision: Decision });
+export type WarningDecision = z.infer<typeof WarningDecision>;
+
+/** What the background keeps in storage.session while a warning is open. */
+export type PendingRecord = {
+  id: string;
+  tabId: number;
+  frameId?: number;
+  documentId?: string;
+  windowId?: number;
+  origin: string;
+  method: string;
+  /** serialized Verdict */
+  verdict: AnalyzeResponse['verdict'];
+  createdAt: number;
+};
