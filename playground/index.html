@@ -2,9 +2,45 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>route-guard playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FakeSwap — 100 USDC → ETH</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <p>playground — PLAN.md 16에서 구현</p>
+    <main>
+      <p class="banner">
+        ⚠️ route-guard 실험용 “변조된 dApp”입니다. 화면은 항상 같지만 버튼마다 지갑에 다른 요청을
+        보냅니다. Sepolia 전용이며 실제 자금이 필요 없습니다. 지갑 창이 뜨면 거절하세요.
+      </p>
+
+      <section class="card swap">
+        <h1>스왑</h1>
+        <div class="leg"><span class="amt">100</span><span class="tok">USDC</span></div>
+        <div class="arrow">↓</div>
+        <div class="leg"><span class="amt">≈ 0.025</span><span class="tok">ETH</span></div>
+        <div class="wallet">
+          <button id="connect" type="button">지갑 연결</button>
+          <button id="sepolia" type="button">Sepolia로 전환</button>
+          <span id="account" class="muted">연결 안 됨</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>시나리오 (모두 화면상 “100 USDC → ETH 스왑” 버튼)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>시나리오</th>
+              <th>실제 요청</th>
+              <th>기대</th>
+              <th>결과</th>
+            </tr>
+          </thead>
+          <tbody id="scenarios"></tbody>
+        </table>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
   </body>
 </html>

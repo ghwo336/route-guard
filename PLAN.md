@@ -131,7 +131,7 @@
 - pending 요청 `{ id, tabId, windowId, verdict, createdAt }`을 `browser.storage.session`에 저장하고, 서비스 워커 재시작 시 복구. 탭이 닫히면 정리
 - **완료 기준**: MEDIUM/HIGH에서 창이 뜨고, 진행·취소·창 닫기 세 경우 모두 정상 처리. 창을 띄운 채 서비스 워커를 강제 종료(chrome://serviceworker-internals)해도 진행/취소가 정상 처리
 
-### [x] 15 `feat(options): mode toggle + verdict log export`
+### [x] 15 `feat(options): mode toggle + verdict log export` — 3437ee4
 - 옵션 페이지: `scoped` / `global` 모드 전환 (기본 scoped)
 - background에서 `{ ts, origin, protected, mode, method, verdict, userDecision }`을 storage에 저장 (주소 마스킹, bigint는 문자열 직렬화)
 - 로그 목록, JSON 내보내기, 초기화
@@ -141,7 +141,7 @@
 
 ## Phase 3. 실험
 
-### [ ] 16 `feat(playground): fake compromised dApp`
+### [x] 16 `feat(playground): fake compromised dApp`
 - `playground/`: Vite 단일 페이지(`http://localhost:5173`), 화면 문구는 항상 "100 USDC → ETH 스왑"
 - 시나리오 버튼 S0~S10, 요청 데이터는 `core/fixtures/scenarios.ts` 재사용
 - **완료 기준**: 확장을 켜고 각 버튼을 누르면 기대 레벨대로 경고가 뜸
