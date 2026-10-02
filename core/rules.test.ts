@@ -435,6 +435,12 @@ describe('amounts in summaries', () => {
       sign(cowOrder({ chainId: 1, receiver: USER, sellToken: USDC, buyToken: WETH }), COW),
     );
     expect(v.summary).toBe('CoW 주문: USDC → WETH, 수령인 본인.');
+    expect(v.details).toMatchObject({
+      token: USDC,
+      amount: 100000000n,
+      tokenOut: WETH,
+      minAmountOut: 25000000000000000n,
+    });
     const e = run(
       tx(
         ETHFLOW,
@@ -444,6 +450,11 @@ describe('amounts in summaries', () => {
       ),
     );
     expect(e.summary).toBe('CoW ETH 주문: ETH (네이티브) → USDC, 수령인 본인.');
+    expect(e.details).toMatchObject({
+      token: '0x0000000000000000000000000000000000000000',
+      amount: 1n,
+      tokenOut: USDC,
+    });
   });
 });
 

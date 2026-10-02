@@ -8,6 +8,8 @@ export type Row = { label: string; value: string; mono?: boolean };
 export function verdictRows(v: Verdict): Row[] {
   const d = v.details;
   const token = (t: string) => `${tokenLabel(d.chainId, t)}\n${t}`;
+  // A trade (CoW / UniswapX order, EthFlow) has both sides: what is sold, then what comes back.
+  const trade = d.tokenOut !== undefined && (d.token !== undefined || d.amount !== undefined);
   const rows: (Row | undefined)[] = [
     { label: '사이트', value: d.origin, mono: true },
     d.matchedDex ? { label: '매칭된 DEX', value: d.matchedDex } : undefined,
@@ -21,9 +23,15 @@ export function verdictRows(v: Verdict): Row[] {
           mono: true,
         }
       : undefined,
-    d.token ? { label: '토큰', value: token(d.token), mono: true } : undefined,
+    d.token
+      ? { label: trade ? '판매 토큰' : '토큰', value: token(d.token), mono: true }
+      : undefined,
     d.amount !== undefined
-      ? { label: '금액', value: formatAmount(d.chainId, d.token, d.amount), mono: true }
+      ? {
+          label: trade ? '판매 금액' : '금액',
+          value: formatAmount(d.chainId, d.token, d.amount),
+          mono: true,
+        }
       : undefined,
     d.tokenOut ? { label: '받을 토큰', value: token(d.tokenOut), mono: true } : undefined,
     d.minAmountOut !== undefined

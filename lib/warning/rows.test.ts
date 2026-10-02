@@ -29,9 +29,9 @@ describe('verdictRows', () => {
     const rows = verdictRows(v);
     expect(rows.map((r) => r.label)).toEqual([
       '사이트', '매칭된 DEX', '요청', '대상 컨트랙트', '권한 받는 주소 (spender)',
-      '받는 주소 (recipient)', '토큰', '금액', '받을 토큰', '최소 수령량', '규칙',
+      '받는 주소 (recipient)', '판매 토큰', '판매 금액', '받을 토큰', '최소 수령량', '규칙',
     ]); // prettier-ignore
-    expect(rows.find((r) => r.label === '금액')?.value).toBe('무제한');
+    expect(rows.find((r) => r.label === '판매 금액')?.value).toBe('무제한');
     expect(rows.find((r) => r.label === '받는 주소 (recipient)')?.value.split('\n')).toEqual([
       '0x3333333333333333333333333333333333333333',
       '본인 (MSG_SENDER)',
@@ -70,10 +70,27 @@ describe('verdictRows', () => {
       },
     });
     const get = (l: string) => rows.find((r) => r.label === l)?.value;
-    expect(get('토큰')).toBe('USDC\n0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
-    expect(get('금액')).toBe('100 USDC');
+    expect(get('판매 토큰')).toBe('USDC\n0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
+    expect(get('판매 금액')).toBe('100 USDC');
     expect(get('받을 토큰')?.split('\n')[0]).toBe('ETH (네이티브)');
     expect(get('최소 수령량')).toBe('0.025 ETH');
+  });
+
+  it('approvals (no output token) keep plain 토큰 / 금액 labels', () => {
+    const rows = verdictRows({
+      level: 'HIGH',
+      ruleIds: ['R2'],
+      summary: '',
+      details: {
+        origin: 'x',
+        protected: true,
+        method: 'eth_sendTransaction',
+        chainId: 1,
+        token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        amount: 'UNLIMITED',
+      },
+    });
+    expect(rows.map((r) => r.label)).toEqual(['사이트', '요청', '토큰', '금액', '규칙']);
   });
 
   it('delays proceed only for HIGH', () => {

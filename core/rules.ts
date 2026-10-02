@@ -308,6 +308,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           target: action.verifyingContract,
           recipients: [action.receiver],
           token: action.sellToken,
+          amount: action.sellAmount,
           tokenOut: action.buyToken,
           minAmountOut: action.buyAmount,
           matchedDex: dexOf(allowed, action.verifyingContract),
@@ -334,8 +335,9 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         details: {
           target: action.to,
           recipients: [action.receiver],
-          tokenOut: action.buyToken,
+          token: ZERO_ADDRESS, // EthFlow sells native ETH
           amount: action.sellAmount,
+          tokenOut: action.buyToken,
           minAmountOut: action.buyAmount,
           matchedDex: dexOf(allowed, action.to),
         },

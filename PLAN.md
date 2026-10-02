@@ -198,10 +198,10 @@
 ### [x] 26 `feat(format): label sentinel recipients` — 886d8a7
 - `MSG_SENDER` → "본인 (MSG_SENDER)", `ADDRESS_THIS` → "라우터 내부 보관 (ADDRESS_THIS)" (표시만)
 
-### [x] 27 `fix(format): pick Korean particles by final consonant`
+### [x] 27 `fix(format): pick Korean particles by final consonant` — 69a389c
 - 을/를, 이/가, 은/는(+ 으로/로) 선택 유틸을 summary 생성 전체에 적용. 숫자·영문은 읽는 소리로 판단, 끝의 괄호는 무시
 
-### [ ] 28 `feat(ui): show CoW sell token and amount`
+### [x] 28 `feat(ui): show CoW sell token and amount`
 - 판매 토큰·금액 → 받을 토큰·최소 수령량 순서
 
 ### [ ] 29 `chore(playground): add playground:unprotected for R0 checks`
