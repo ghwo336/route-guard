@@ -160,3 +160,59 @@ export function eip2612Permit(opts: {
     },
   };
 }
+
+/** CoW Protocol order, shaped like swap.cow.fi's eth_signTypedData_v4 payload. */
+export function cowOrder(opts: {
+  chainId: number;
+  receiver: Address;
+  sellToken: Address;
+  buyToken: Address;
+  verifyingContract?: Address;
+  buyAmount?: string;
+}) {
+  return {
+    types: {
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' },
+      ],
+      Order: [
+        { name: 'sellToken', type: 'address' },
+        { name: 'buyToken', type: 'address' },
+        { name: 'receiver', type: 'address' },
+        { name: 'sellAmount', type: 'uint256' },
+        { name: 'buyAmount', type: 'uint256' },
+        { name: 'validTo', type: 'uint32' },
+        { name: 'appData', type: 'bytes32' },
+        { name: 'feeAmount', type: 'uint256' },
+        { name: 'kind', type: 'string' },
+        { name: 'partiallyFillable', type: 'bool' },
+        { name: 'sellTokenBalance', type: 'string' },
+        { name: 'buyTokenBalance', type: 'string' },
+      ],
+    },
+    domain: {
+      name: 'Gnosis Protocol',
+      version: 'v2',
+      chainId: opts.chainId,
+      verifyingContract: opts.verifyingContract ?? wl(opts.chainId, 'cow', 'GPv2Settlement'),
+    },
+    primaryType: 'Order',
+    message: {
+      sellToken: opts.sellToken,
+      buyToken: opts.buyToken,
+      receiver: opts.receiver,
+      sellAmount: '100000000',
+      buyAmount: opts.buyAmount ?? '25000000000000000',
+      validTo: 1900000000,
+      appData: '0x' + '00'.repeat(32),
+      feeAmount: '0',
+      kind: 'sell',
+      partiallyFillable: false,
+      sellTokenBalance: 'erc20',
+      buyTokenBalance: 'erc20',
+    },
+  };
+}

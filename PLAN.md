@@ -51,7 +51,7 @@
 - 확인하지 못한 주소는 `verified: false`로 두고 커밋 본문에 목록 기재
 - **완료 기준**: 스키마 검증 테스트 통과. **사람이 주소를 검수한 뒤 다음 단계로** (리뷰 포인트 ①)
 
-### [x] 05 `feat(core): decode approvals`
+### [x] 05 `feat(core): decode approvals` — d4254b6
 - `core/decode/approval.ts`
   - tx: approve, increaseAllowance, setApprovalForAll, Permit2 `approve(token, spender, amount, expiration)`
   - typed data: EIP-2612 Permit, Permit2 (Single/Batch/TransferFrom/BatchTransferFrom/WitnessTransferFrom)
@@ -59,11 +59,12 @@
 - typed data 입력은 v3/v4 공통 (문자열 JSON 또는 객체 모두 허용)
 - **완료 기준**: 형식별 디코딩 테스트, 실제 모양의 샘플 fixture 사용
 
-### [ ] 06 `feat(core): decode CoW orders`
+### [x] 06 `feat(core): decode CoW orders`
 - `core/decode/cow.ts`
   - typed data 주문: verifyingContract, receiver, sellToken, buyToken, buyAmount
   - EthFlow `createOrder(order)` calldata: receiver, buyToken, buyAmount (ABI는 cowprotocol/ethflowcontract 공식 소스에서 확인)
   - GPv2Settlement `setPreSignature(orderUid, signed)` → `CowPreSignature`
+  - 주문 취소(EthFlow `invalidateOrder`, Settlement `invalidateOrder`) → `RouterNoop`
 - **완료 기준**: 주문·EthFlow 각각 receiver = 0x0 / 본인 / 타인 케이스, setPreSignature 디코딩 테스트
 
 ### [ ] 07 `feat(core): decode router calls`
