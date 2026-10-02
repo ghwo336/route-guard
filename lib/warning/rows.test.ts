@@ -47,9 +47,32 @@ describe('verdictRows', () => {
     expect(rows.map((r) => [r.label, r.value])).toEqual([
       ['사이트', 'x'],
       ['요청', 'personal_sign (chainId 1)'],
-      ['금액', '5'],
+      ['금액', '5 (decimals 알 수 없음)'],
       ['규칙', '-'],
     ]);
+  });
+
+  it('formats known token amounts and labels tokens', () => {
+    const rows = verdictRows({
+      level: 'HIGH',
+      ruleIds: ['R8'],
+      summary: '',
+      details: {
+        origin: 'x',
+        protected: true,
+        method: 'eth_sendTransaction',
+        chainId: 11155111,
+        token: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+        amount: 100_000_000n,
+        tokenOut: '0x0000000000000000000000000000000000000000',
+        minAmountOut: 25_000_000_000_000_000n,
+      },
+    });
+    const get = (l: string) => rows.find((r) => r.label === l)?.value;
+    expect(get('토큰')).toBe('USDC\n0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238');
+    expect(get('금액')).toBe('100 USDC');
+    expect(get('받을 토큰')?.split('\n')[0]).toBe('ETH (네이티브)');
+    expect(get('최소 수령량')).toBe('0.025 ETH');
   });
 
   it('delays proceed only for HIGH', () => {

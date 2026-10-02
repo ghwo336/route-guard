@@ -1,7 +1,7 @@
 import { getAddress, type Address } from 'viem';
 import { isSentinel } from './decode/router';
 import { isUnlimited, sameAddress, ZERO_ADDRESS } from './decode/util';
-import { describeAddress, describeAmount, shortAddress } from './format';
+import { describeAddress, describeToken, describeTokenAmount, shortAddress } from './format';
 import type { Amount, DecodedAction, RiskLevel, RuleId, VerdictDetails } from './types';
 import { lookup, type AllowedSet } from './whitelist/loader';
 
@@ -21,6 +21,8 @@ export type ActionResult = {
 export type RuleContext = {
   allowed: AllowedSet;
   signer?: Address;
+  /** For display only (token symbols / decimals). */
+  chainId?: number;
 };
 
 const LEVEL_RANK: Record<RiskLevel, number> = { LOW: 0, MEDIUM: 1, HIGH: 2 };
@@ -59,7 +61,7 @@ function grant(
   ctx: RuleContext,
   o: {
     spender: Address;
-    token: Address;
+    token: Address | undefined;
     amount: bigint;
     /** Permit2 permits/approvals also accept the DEX routers as spenders. */
     allowRouters: boolean;
@@ -67,14 +69,15 @@ function grant(
   },
 ): RuleHit {
   const { allowed } = ctx;
-  const amt = describeAmount(amountOf(o.amount));
+  const chainId = ctx.chainId ?? 0;
+  const amt = describeTokenAmount(chainId, o.token, amountOf(o.amount));
   const who = describeAddress(o.spender, allowed);
-  const token = shortAddress(o.token);
+  const token = describeToken(chainId, o.token);
   if (o.revocable && o.amount === 0n) {
     return {
       ruleId: 'R4',
       level: 'LOW',
-      message: `${who}의 토큰 ${token} 사용 권한을 회수합니다.`,
+      message: `${who}의 ${token} 사용 권한을 회수합니다.`,
     };
   }
   const known =
@@ -83,13 +86,13 @@ function grant(
     return {
       ruleId: 'R1',
       level: 'LOW',
-      message: `공식 주소 ${who}에게 토큰 ${token} ${amt} 사용 권한을 줍니다.`,
+      message: `공식 주소 ${who}에게 ${amt} 사용 권한을 줍니다.`,
     };
   }
   return {
     ruleId: 'R2',
     level: 'HIGH',
-    message: `등록되지 않은 주소 ${who}에게 토큰 ${token} ${amt} 사용 권한을 줍니다.`,
+    message: `등록되지 않은 주소 ${who}에게 ${amt} 사용 권한을 줍니다.`,
   };
 }
 
@@ -123,6 +126,7 @@ function unregisteredTo(ctx: RuleContext, to: Address, what: string): RuleHit {
 /** Apply R1-R16 to one decoded action. Order follows AGENTS.md 9장. */
 export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionResult {
   const { allowed } = ctx;
+  const chainId = ctx.chainId ?? 0;
   switch (action.kind) {
     case 'approve': {
       const isPermit2 = action.fn === 'permit2Approve';
@@ -192,7 +196,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
       const token = action.verifyingContract;
       const hit = grant(ctx, {
         spender: action.spender,
-        token: token ?? ZERO_ADDRESS,
+        token,
         amount: action.amount,
         allowRouters: false,
         revocable: true,
@@ -293,7 +297,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
       }
       return {
         hits,
-        summary: `CoW 주문: 토큰 ${shortAddress(action.sellToken)} → ${shortAddress(action.buyToken)}, 수령인 본인.`,
+        summary: `CoW 주문: ${describeToken(chainId, action.sellToken)} → ${describeToken(chainId, action.buyToken)}, 수령인 본인.`,
         details: {
           target: action.verifyingContract,
           recipients: [action.receiver],
@@ -320,7 +324,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
       }
       return {
         hits,
-        summary: `CoW ETH 주문: ETH → 토큰 ${shortAddress(action.buyToken)}, 수령인 본인.`,
+        summary: `CoW ETH 주문: ETH (네이티브) → ${describeToken(chainId, action.buyToken)}, 수령인 본인.`,
         details: {
           target: action.to,
           recipients: [action.receiver],
@@ -405,14 +409,17 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
     }
 
     case 'utility': {
+      // deposit takes native ETH (tx value); withdraw burns the wrapped token at `to`
+      const token = action.fn === 'deposit' ? ZERO_ADDRESS : action.to;
+      const amount = describeTokenAmount(chainId, token, action.amount);
       const hit: RuleHit = has(allowed.utilities, action.to)
         ? {
             ruleId: 'R7',
             level: 'LOW',
-            message: `${describeAddress(action.to, allowed)} ${action.fn} ${action.amount}.`,
+            message: `${describeAddress(action.to, allowed)} ${action.fn} ${amount}.`,
           }
         : unregisteredTo(ctx, action.to, `${action.fn} 호출`);
-      return { hits: [hit], details: { target: action.to, amount: action.amount } };
+      return { hits: [hit], details: { target: action.to, token, amount: action.amount } };
     }
 
     case 'other':
@@ -433,7 +440,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           {
             ruleId: 'R12',
             level: 'MEDIUM',
-            message: `토큰 ${shortAddress(action.to)} ${action.amount}을(를) ${describeAddress(action.recipient, allowed)}에게 직접 보냅니다.`,
+            message: `${describeTokenAmount(chainId, action.to, action.amount)}을(를) ${describeAddress(action.recipient, allowed)}에게 직접 보냅니다.`,
           },
         ],
         details: {
@@ -446,6 +453,8 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
 
     case 'unknownCall': {
       const details: Partial<VerdictDetails> = { target: action.to, amount: action.value };
+      if (action.value > 0n) details.token = ZERO_ADDRESS; // the amount is native ETH
+      const eth = describeTokenAmount(chainId, ZERO_ADDRESS, action.value);
       if (action.to === undefined) {
         return {
           hits: [
@@ -467,7 +476,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
               {
                 ruleId: 'R7',
                 level: 'LOW',
-                message: `공식 컨트랙트 ${describeAddress(action.to, allowed)}에 ETH ${action.value}을(를) 보냅니다.`,
+                message: `공식 컨트랙트 ${describeAddress(action.to, allowed)}에 ${eth}을(를) 보냅니다.`,
               },
             ],
             details,
@@ -486,9 +495,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
       }
       if (action.hasData || action.value > 0n) {
         return {
-          hits: [
-            unregisteredTo(ctx, action.to, action.hasData ? '호출 데이터' : `ETH ${action.value}`),
-          ],
+          hits: [unregisteredTo(ctx, action.to, action.hasData ? '호출 데이터' : eth)],
           details,
         };
       }

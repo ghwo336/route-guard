@@ -57,7 +57,7 @@ export function analyze(req: SignRequest, whitelists: Whitelists, mode: Mode): V
     }
 
     const decoded = decodeRequest(req, contextFor(scope));
-    const ctx = { allowed: scope.allowed, signer: decoded.signer };
+    const ctx = { allowed: scope.allowed, signer: decoded.signer, chainId: req.chainId };
     const results: ActionResult[] = decoded.actions.map((a) => evaluateAction(a, ctx));
 
     const hits: RuleHit[] = results.flatMap((r) => r.hits);

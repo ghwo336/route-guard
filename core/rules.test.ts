@@ -89,7 +89,7 @@ describe('approvals R1-R4', () => {
 
   it('R2: approve(ATTACKER, MAX)', () => {
     const v = expectRule(tx(USDC, c.approve(ATTACKER, c.MAX_UINT256)), 'HIGH', ['R2']);
-    expect(v.summary).toMatch(/^등록되지 않은 주소 0xBAdB…BAD0에게 토큰 0xA0b8…eB48 무제한/);
+    expect(v.summary).toBe('등록되지 않은 주소 0xBAdB…BAD0에게 USDC 무제한 사용 권한을 줍니다.');
   });
 
   it('R2: approve to a router (not a spender) on a plain ERC-20', () => {
@@ -137,7 +137,7 @@ describe('approvals R1-R4', () => {
       value: '1',
     });
     const v = run(sign({ ...noVc, domain: { name: 'X' } }));
-    expect(v.summary).toContain('0x0000…0000');
+    expect(v.summary).toContain('알 수 없는 토큰 1 (decimals 알 수 없음)');
   });
 
   it('Permit2 typed data: UniversalRouter as spender is normal', () => {
@@ -410,6 +410,40 @@ describe('router R7-R10', () => {
 
   it('others: position manager calls are LOW', () => {
     expectRule(tx(NPM, '0xdeadbeef'), 'LOW', ['R7']);
+  });
+});
+
+describe('amounts in summaries', () => {
+  it('known tokens are scaled, unknown tokens keep raw values, ETH is native', () => {
+    expect(run(tx(USDC, c.transfer(ATTACKER, 100_000_000n))).summary).toContain('100 USDC');
+    expect(run(tx(TOKENS.nft, c.transfer(ATTACKER, 5n))).summary).toContain(
+      '토큰 0x2222…2222 5 (decimals 알 수 없음)',
+    );
+    expect(run(tx(USDC, c.approve(ATTACKER, 0n))).summary).toContain('USDC 사용 권한을 회수');
+    expect(run(tx(WETH, c.wethDeposit(), '0x58d15e176280000')).summary).toContain(
+      'deposit 0.4 ETH',
+    );
+    expect(run(tx(WETH, c.wethWithdraw(10n ** 18n))).summary).toContain('withdraw 1 WETH');
+    expect(run(tx(WETH, undefined, '0xde0b6b3a7640000')).summary).toContain('1 ETH');
+    expect(run(tx(ATTACKER, undefined, '0xde0b6b3a7640000')).details.token).toBe(
+      '0x0000000000000000000000000000000000000000',
+    );
+  });
+
+  it('CoW summaries name tokens', () => {
+    const v = run(
+      sign(cowOrder({ chainId: 1, receiver: USER, sellToken: USDC, buyToken: WETH }), COW),
+    );
+    expect(v.summary).toBe('CoW 주문: USDC → WETH, 수령인 본인.');
+    const e = run(
+      tx(
+        ETHFLOW,
+        c.ethFlowCreateOrder({ buyToken: USDC, receiver: USER, sellAmount: 1n }),
+        '0x1',
+        COW,
+      ),
+    );
+    expect(e.summary).toBe('CoW ETH 주문: ETH (네이티브) → USDC, 수령인 본인.');
   });
 });
 

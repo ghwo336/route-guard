@@ -188,10 +188,10 @@
 
 판정 로직(rules, level, ruleIds)은 바꾸지 않는다. 표시 계층(요약 문구, 경고창, 포맷 유틸)만 수정한다.
 
-### [x] 24 `fix(ui): pin warning buttons to the bottom`
+### [x] 24 `fix(ui): pin warning buttons to the bottom` — db704eb
 - 본문만 스크롤, 취소/진행 버튼은 하단 고정. 창 기본 높이 660 → 760
 
-### [ ] 25 `feat(format): show token amounts with decimals`
+### [x] 25 `feat(format): show token amounts with decimals`
 - 정적 토큰 메타데이터(`core/format/tokens.json`, 체인별 symbol·decimals). 온체인 조회 금지
 - 아는 토큰은 `100 USDC`, 모르는 토큰은 주소 + "decimals 알 수 없음" + 원시값, `0x0…0`은 "ETH (네이티브)", 무제한은 "무제한"
 

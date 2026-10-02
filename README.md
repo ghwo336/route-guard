@@ -132,7 +132,7 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 - **`others`**(PositionManager 등) 호출은 `to`만 확인하고 calldata 안의 recipient는 해석하지 않습니다. UniversalRouter의 포지션 매니저 command, Across 브리지 command도 해석하지 않습니다(R9).
 - **`eth_signTypedData`(v1)**은 해석하지 않습니다(R13).
 - typed data의 `domain.chainId`는 현재 체인과 비교하지 않습니다.
-- 토큰 심볼·소수점은 조회하지 않습니다(외부 API·온체인 조회 금지 정책). 금액은 원시 정수로 표시합니다.
+- 토큰 심볼·소수점은 조회하지 않습니다(외부 API·온체인 조회 금지 정책). 정적 메타데이터([core/format/tokens.json](core/format/tokens.json): 체인별 USDC·WETH)에 있는 토큰만 `100 USDC`처럼 표시하고, 나머지는 주소와 원시 정수("decimals 알 수 없음")로 표시합니다.
 - 화이트리스트는 확장에 번들됩니다. 공식 프론트엔드가 새 router를 배포하면 JSON을 갱신해야 하며, 그 전까지는 R11 오탐이 날 수 있습니다.
 
 ## 7. 실험 재현
