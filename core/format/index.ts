@@ -6,6 +6,7 @@ import { formatAmount, tokenMeta } from './amount';
 export * from './amount';
 export * from './josa';
 export * from './sentinel';
+export * from './summary';
 
 /** 0xAbCd…1234 */
 export function shortAddress(a: Address): string {

@@ -1,4 +1,5 @@
 import { decodeRequest, type DecodeContext } from './decode';
+import { otherFindings, withOthers } from './format/summary';
 import {
   byRisk,
   compareRuleIds,
@@ -68,9 +69,7 @@ export function analyze(req: SignRequest, whitelists: Whitelists, mode: Mode): V
     const worstIdx = results.findIndex((r) => maxLevel(r.hits.map((h) => h.level)) === level);
     const worst = results[worstIdx]!;
     const top = [...worst.hits].sort(byRisk)[0];
-    let summary = top?.message ?? worst.summary ?? '';
-    const extra = hits.length - 1;
-    if (top && extra > 0) summary += ` (외 ${extra}건)`;
+    let summary = withOthers(top?.message ?? worst.summary ?? '', otherFindings(hits, top));
     if (results.length > 1) summary = `[${results.length}개 호출 중 ${worstIdx + 1}번] ${summary}`;
 
     return {

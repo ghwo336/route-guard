@@ -206,12 +206,13 @@ describe('UniswapX orders', () => {
   it('R8: output to the attacker', () => {
     const v = expectRule(order(ATTACKER), 'HIGH', ['R1', 'R8']);
     expect(v.summary).toBe(
-      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0이 받습니다. (외 1건)',
+      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0이 받습니다.',
     );
   });
 
   it('R8 + R2: attacker reactor and attacker recipient', () => {
-    expectRule(order(ATTACKER, { reactor: ATTACKER }), 'HIGH', ['R2', 'R8']);
+    const v = expectRule(order(ATTACKER, { reactor: ATTACKER }), 'HIGH', ['R2', 'R8']);
+    expect(v.summary).toMatch(/\(외 1건\)$/); // two HIGH findings
   });
 
   it('R9: order type we do not decode', () => {
@@ -553,7 +554,8 @@ describe('wallet_sendCalls', () => {
     });
     expect(v.level).toBe('HIGH');
     expect(v.ruleIds).toEqual(['R1', 'R2']);
-    expect(v.summary).toMatch(/^\[2개 호출 중 2번\] 등록되지 않은 주소 .* \(외 1건\)$/);
+    expect(v.summary).toMatch(/^\[2개 호출 중 2번\] 등록되지 않은 주소 .* 사용 권한을 줍니다\.$/);
+    expect(v.ruleIds).toEqual(['R1', 'R2']); // LOW R1 is not counted in the text, but kept here
     expect(v.details.spender).toBe(ATTACKER);
   });
 });

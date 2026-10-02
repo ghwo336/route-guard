@@ -204,8 +204,23 @@
 ### [x] 28 `feat(ui): show CoW sell token and amount` — c77c0f9
 - 판매 토큰·금액 → 받을 토큰·최소 수령량 순서
 
-### [x] 29 `chore(playground): add playground:unprotected for R0 checks`
+### [x] 29 `chore(playground): add playground:unprotected for R0 checks` — e5f8c65
 - `127.0.0.1`에서 띄우는 스크립트. protected origin이 아니므로 S2도 경고 없이 통과해야 정상
+
+---
+
+## Phase 6. 경고창 가독성 (Phase 5 후속)
+
+판정 로직은 바꾸지 않는다. 라벨·강조 판단은 `core/format/`의 순수 함수로 둔다.
+
+### [x] 30 `fix(format): count only MEDIUM/HIGH findings in "(외 N건)"`
+- LOW 규칙(R1, R4, R7 …)은 개수에서 제외. `ruleIds`는 그대로
+
+### [ ] 31 `feat(ui): highlight spender and recipients`
+- 본인/센티널/화이트리스트가 아닌 주소에 "⚠ 본인 아님" / "⚠ 미등록" 배지와 경고색, 정상 주소에는 "본인", "공식 Uniswap Permit2" 같은 라벨
+
+### [ ] 32 `feat(format): label CoW receiver 0x0 as the order owner`
+- "본인 (주문자, receiver=0x0)". 판정은 기존대로 정상
 
 ---
 
