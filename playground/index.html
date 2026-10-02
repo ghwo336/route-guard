@@ -3,42 +3,90 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FakeSwap — 100 USDC → ETH</title>
+    <title>FakeSwap — route-guard 데모</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">⇄</span> FakeSwap <span class="tag">route-guard 데모</span>
+      </div>
+      <div class="wallet">
+        <span id="network" class="pill muted">지갑 미연결</span>
+        <button id="sepolia" type="button" class="ghost" hidden>Sepolia로 전환</button>
+        <button id="connect" type="button" class="primary-sm">지갑 연결</button>
+      </div>
+    </header>
+
     <main>
-      <p class="banner">
-        ⚠️ route-guard 실험용 “변조된 dApp”입니다. 화면은 항상 같지만 버튼마다 지갑에 다른 요청을
-        보냅니다. Sepolia 전용이며 실제 자금이 필요 없습니다. 지갑 창이 뜨면 거절하세요.
+      <p class="intro">
+        왼쪽은 사용자가 보는 <strong>정상 화면</strong>, 오른쪽은 변조된 프론트엔드가
+        <strong>몰래 바꾸는 것</strong>입니다. 시나리오를 바꿔도 왼쪽 화면은 그대로입니다.
+        <span class="muted">Sepolia 전용 · 지갑 창이 뜨면 항상 거절하세요.</span>
       </p>
 
-      <section class="card swap">
-        <h1>스왑</h1>
-        <div class="leg"><span class="amt">100</span><span class="tok">USDC</span></div>
-        <div class="arrow">↓</div>
-        <div class="leg"><span class="amt">≈ 0.025</span><span class="tok">ETH</span></div>
-        <div class="wallet">
-          <button id="connect" type="button">지갑 연결</button>
-          <button id="sepolia" type="button">Sepolia로 전환</button>
-          <span id="account" class="muted">연결 안 됨</span>
+      <div class="stage">
+        <div class="left">
+          <!-- what the user sees -->
+          <section class="swap card" aria-label="사용자가 보는 화면">
+            <div class="card-label">사용자가 보는 화면</div>
+            <h1>스왑</h1>
+            <div class="leg">
+              <div>
+                <div class="leg-label">보내는 토큰</div>
+                <div class="amt">100</div>
+              </div>
+              <span class="tok"><span class="dot usdc"></span>USDC</span>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="leg">
+              <div>
+                <div class="leg-label">받는 토큰 (예상)</div>
+                <div class="amt">0.025</div>
+              </div>
+              <span class="tok"><span class="dot eth"></span>ETH</span>
+            </div>
+            <div class="quote muted">1 USDC ≈ 0.00025 ETH · 슬리피지 0.5% · 받는 주소: 내 지갑</div>
+            <button id="swap" type="button" class="swapbtn">스왑</button>
+            <div id="hint" class="hint" role="status"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-label">이번 요청</div>
+            <ol id="timeline" class="timeline">
+              <li class="muted">시나리오를 고르고 스왑을 누르세요.</li>
+            </ol>
+          </section>
         </div>
-      </section>
+
+        <!-- what the compromised frontend does -->
+        <section class="attacker card" aria-label="공격자 패널">
+          <div class="card-label danger">공격자 패널 · 변조된 프론트엔드가 몰래 바꾸는 것</div>
+          <div id="scenarios" class="scenarios"></div>
+        </section>
+      </div>
 
       <section class="card">
-        <h2>시나리오 (모두 화면상 “100 USDC → ETH 스왑” 버튼)</h2>
-        <table>
+        <div class="card-label">실행 기록</div>
+        <table class="history">
           <thead>
             <tr>
-              <th></th>
               <th>시나리오</th>
-              <th>실제 요청</th>
-              <th>기대</th>
+              <th>기대 판정</th>
               <th>결과</th>
             </tr>
           </thead>
-          <tbody id="scenarios"></tbody>
+          <tbody id="history">
+            <tr class="empty">
+              <td colspan="3" class="muted">아직 없음</td>
+            </tr>
+          </tbody>
         </table>
+        <p class="muted small">
+          결과의 "누가 막았는지"는 지갑이 돌려준 에러 메시지로 <strong>추정</strong>한 것입니다.
+          페이지는 route-guard의 판정을 직접 볼 수 없습니다(확장 옵션 페이지의 로그가 정확한
+          기록입니다).
+        </p>
       </section>
     </main>
     <script type="module" src="./main.ts"></script>

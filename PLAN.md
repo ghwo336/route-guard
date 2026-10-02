@@ -172,9 +172,14 @@
 
 ### [x] 21 `docs: note R10 is a bypassable heuristic` — 23b2d33
 
-### [x] 22 `chore: add check:whitelist gate before experiments`
+### [x] 22 `chore: add check:whitelist gate before experiments` — 719b048
 - `pnpm check:whitelist`: 메인넷 JSON에 `verified: false`가 있으면 실패, Sepolia는 경고만
 - 리서치 4장 실험(README 7.5·7.6) 전에 반드시 통과
+
+### [x] 23 `feat(playground): redesign as one swap screen + attacker panel`
+- 한 화면에 스왑 버튼 하나, 시나리오는 별도 "공격자 패널"에서 선택 (화면은 그대로, 요청만 바뀜)
+- "이번 요청" 타임라인: 화면에 보인 것 → 실제 요청 → 기대 판정 → 결과(route-guard 차단 / 지갑까지 전달 / 지갑 거절, 추정 표시)
+- 요청 중에는 버튼·패널 잠금, 실행 기록 누적. 실제 서비스 브랜딩은 쓰지 않음
 - README 한계: R10은 1 wei 등으로 우회 가능한 보조 휴리스틱
 
 ---
