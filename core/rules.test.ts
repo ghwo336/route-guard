@@ -206,7 +206,7 @@ describe('UniswapX orders', () => {
   it('R8: output to the attacker', () => {
     const v = expectRule(order(ATTACKER), 'HIGH', ['R1', 'R8']);
     expect(v.summary).toBe(
-      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0가 받습니다. (외 1건)',
+      'UniswapX 주문(V2DutchOrder)의 결과물 일부를 본인이 아닌 0xBAdB…BAD0이 받습니다. (외 1건)',
     );
   });
 
@@ -444,6 +444,30 @@ describe('amounts in summaries', () => {
       ),
     );
     expect(e.summary).toBe('CoW ETH 주문: ETH (네이티브) → USDC, 수령인 본인.');
+  });
+});
+
+describe('particles in summaries', () => {
+  it('을/를, 이/가, 으로/로 follow the final sound', () => {
+    expect(run(tx(ATTACKER, r.urExecute([r.sweep(WETH, r.MSG_SENDER, 1n)]))).summary).toBe(
+      '등록되지 않은 컨트랙트 0xBAdB…BAD0에 swap 호출을 보냅니다.',
+    );
+    expect(run(tx(ATTACKER, '0xdeadbeef')).summary).toContain('호출 데이터를 보냅니다');
+    expect(run(tx(USDC, c.transfer(ATTACKER, 100_000_000n))).summary).toContain('100 USDC를 ');
+    expect(run(tx(ATTACKER, undefined, '0xde0b6b3a7640000')).summary).toContain('1 ETH를 보냅니다');
+    const s7 = r.urExecute([
+      r.v3ExactIn({ recipient: TOKENS.nft, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+    ]);
+    expect(run(tx(UR, s7)).summary).toContain('0x2222…2222가 받습니다');
+    const inner = [
+      r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+    ];
+    expect(run(tx(PROXY, r.swapProxyExecute(ATTACKER, USDC, 1n, inner))).summary).toContain(
+      'router 0xBAdB…BAD0으로 전달합니다',
+    );
+    for (const req of [tx(ATTACKER, '0xdeadbeef'), tx(USDC, c.transfer(ATTACKER, 1n))]) {
+      expect(run(req).summary).not.toMatch(/\((을|를|이|가)\)/);
+    }
   });
 });
 

@@ -195,11 +195,11 @@
 - 정적 토큰 메타데이터(`core/format/tokens.json`, 체인별 symbol·decimals). 온체인 조회 금지
 - 아는 토큰은 `100 USDC`, 모르는 토큰은 주소 + "decimals 알 수 없음" + 원시값, `0x0…0`은 "ETH (네이티브)", 무제한은 "무제한"
 
-### [x] 26 `feat(format): label sentinel recipients`
+### [x] 26 `feat(format): label sentinel recipients` — 886d8a7
 - `MSG_SENDER` → "본인 (MSG_SENDER)", `ADDRESS_THIS` → "라우터 내부 보관 (ADDRESS_THIS)" (표시만)
 
-### [ ] 27 `fix(format): pick Korean particles by final consonant`
-- 을/를, 이/가, 은/는 선택 유틸을 summary 생성 전체에 적용
+### [x] 27 `fix(format): pick Korean particles by final consonant`
+- 을/를, 이/가, 은/는(+ 으로/로) 선택 유틸을 summary 생성 전체에 적용. 숫자·영문은 읽는 소리로 판단, 끝의 괄호는 무시
 
 ### [ ] 28 `feat(ui): show CoW sell token and amount`
 - 판매 토큰·금액 → 받을 토큰·최소 수령량 순서

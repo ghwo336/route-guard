@@ -1,7 +1,13 @@
 import { getAddress, type Address } from 'viem';
 import { isSentinel } from './decode/router';
 import { isUnlimited, sameAddress, ZERO_ADDRESS } from './decode/util';
-import { describeAddress, describeToken, describeTokenAmount, shortAddress } from './format';
+import {
+  describeAddress,
+  describeToken,
+  describeTokenAmount,
+  shortAddress,
+  withJosa,
+} from './format';
 import type { Amount, DecodedAction, RiskLevel, RuleId, VerdictDetails } from './types';
 import { lookup, type AllowedSet } from './whitelist/loader';
 
@@ -119,7 +125,7 @@ function unregisteredTo(ctx: RuleContext, to: Address, what: string): RuleHit {
   return {
     ruleId: 'R11',
     level: 'HIGH',
-    message: `등록되지 않은 컨트랙트 ${shortAddress(to)}에 ${what}을(를) 보냅니다.`,
+    message: `등록되지 않은 컨트랙트 ${shortAddress(to)}에 ${withJosa(what, '을/를')} 보냅니다.`,
   };
 }
 
@@ -248,7 +254,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
             hits.push({
               ruleId: 'R8',
               level: 'HIGH',
-              message: `UniswapX 주문(${name})의 결과물 일부를 본인이 아닌 ${bad.map(shortAddress).join(', ')}가 받습니다.`,
+              message: `UniswapX 주문(${name})의 결과물 일부를 본인이 아닌 ${withJosa(bad.map(shortAddress).join(', '), '이/가')} 받습니다.`,
             });
           }
           if (unverifiable) {
@@ -292,7 +298,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         hits.push({
           ruleId: 'R6',
           level: 'HIGH',
-          message: `CoW 주문의 결과물을 본인이 아닌 ${shortAddress(action.receiver)}가 받습니다.`,
+          message: `CoW 주문의 결과물을 본인이 아닌 ${withJosa(shortAddress(action.receiver), '이/가')} 받습니다.`,
         });
       }
       return {
@@ -319,7 +325,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         hits.push({
           ruleId: 'R6',
           level: 'HIGH',
-          message: `CoW ETH 주문의 결과물을 본인이 아닌 ${shortAddress(action.receiver)}가 받습니다.`,
+          message: `CoW ETH 주문의 결과물을 본인이 아닌 ${withJosa(shortAddress(action.receiver), '이/가')} 받습니다.`,
         });
       }
       return {
@@ -373,7 +379,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         hits.push({
           ruleId: 'R11',
           level: 'HIGH',
-          message: `SwapProxy가 등록되지 않은 router ${shortAddress(action.innerRouter)}로 전달합니다.`,
+          message: `SwapProxy가 등록되지 않은 router ${withJosa(shortAddress(action.innerRouter), '으로/로')} 전달합니다.`,
         });
       }
       const { bad, unverifiable } = recipientsCheck(ctx, action.recipients);
@@ -381,7 +387,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         hits.push({
           ruleId: 'R8',
           level: 'HIGH',
-          message: `swap 결과물 일부를 본인이 아닌 ${bad.map(shortAddress).join(', ')}가 받습니다.`,
+          message: `swap 결과물 일부를 본인이 아닌 ${withJosa(bad.map(shortAddress).join(', '), '이/가')} 받습니다.`,
         });
       }
       if (action.decodeError !== undefined || unverifiable) {
@@ -440,7 +446,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           {
             ruleId: 'R12',
             level: 'MEDIUM',
-            message: `${describeTokenAmount(chainId, action.to, action.amount)}을(를) ${describeAddress(action.recipient, allowed)}에게 직접 보냅니다.`,
+            message: `${withJosa(describeTokenAmount(chainId, action.to, action.amount), '을/를')} ${describeAddress(action.recipient, allowed)}에게 직접 보냅니다.`,
           },
         ],
         details: {
@@ -476,7 +482,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
               {
                 ruleId: 'R7',
                 level: 'LOW',
-                message: `공식 컨트랙트 ${describeAddress(action.to, allowed)}에 ${eth}을(를) 보냅니다.`,
+                message: `공식 컨트랙트 ${describeAddress(action.to, allowed)}에 ${withJosa(eth, '을/를')} 보냅니다.`,
               },
             ],
             details,

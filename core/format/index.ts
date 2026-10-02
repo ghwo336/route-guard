@@ -4,6 +4,7 @@ import { lookup } from '../whitelist/loader';
 import { formatAmount, tokenMeta } from './amount';
 
 export * from './amount';
+export * from './josa';
 export * from './sentinel';
 
 /** 0xAbCd…1234 */
