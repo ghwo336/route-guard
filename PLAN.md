@@ -170,7 +170,11 @@
 ### [x] 20 `test(e2e): add Playwright e2e (pnpm e2e)` — 020dddf
 - 스텁 지갑 + 빌드한 확장으로 경고 흐름과 playground S0–S11 검증
 
-### [x] 21 `docs: note R10 is a bypassable heuristic`
+### [x] 21 `docs: note R10 is a bypassable heuristic` — 23b2d33
+
+### [x] 22 `chore: add check:whitelist gate before experiments`
+- `pnpm check:whitelist`: 메인넷 JSON에 `verified: false`가 있으면 실패, Sepolia는 경고만
+- 리서치 4장 실험(README 7.5·7.6) 전에 반드시 통과
 - README 한계: R10은 1 wei 등으로 우회 가능한 보조 휴리스틱
 
 ---
@@ -180,7 +184,7 @@
 1. **04 이후**: 화이트리스트 주소를 공식 출처와 대조
 2. **10 이후**: 판정 결과표가 AGENTS.md 11장 시나리오 표와 일치하는지
 3. **14 이후**: 실제 지갑 두 개로 수동 테스트 (실제 Uniswap/CoW에서 오탐 없는지 포함)
-4. **17 이후**: 4장 실험 진행
+4. **17 이후**: `pnpm check:whitelist` 통과 확인 후 4장 실험 진행
 
 ---
 

@@ -7,7 +7,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['core/**/*.test.ts', 'lib/**/*.test.ts'],
+    include: ['core/**/*.test.ts', 'lib/**/*.test.ts', 'scripts/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['core/**/*.ts', 'lib/**/*.ts'],

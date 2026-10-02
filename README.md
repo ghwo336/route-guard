@@ -223,7 +223,19 @@ pnpm e2e                          # 확장 빌드 → playground 기동 → Chro
 - 사용자 지갑 주소는 앞뒤 4자리만 남기고 마스킹되며, bigint는 문자열로 내보냅니다.
 - 실험 회차마다 **초기화**(두 번 클릭) 후 진행하면 회차별 로그를 분리할 수 있습니다.
 
-### 7.4 오탐 실험 (실제 사이트)
+### 7.4 실험 전 확인: 화이트리스트 검증 상태
+
+7.5·7.6 실험(리서치 4장)을 시작하기 전에 반드시 통과해야 합니다.
+
+```sh
+pnpm check:whitelist
+```
+
+- **메인넷**(`1.json`)에 `verified: false` 항목이 하나라도 있으면 실패합니다(exit 1). 실사이트에서 해당 주소가 실제로 쓰이는지 확인한 뒤 `verified: true`로 바꾸거나 항목을 지우세요.
+- **Sepolia** 등 다른 체인의 미검증 항목은 경고만 출력합니다.
+- 결과 기록에는 실험 시점의 커밋 해시를 같이 적으세요(화이트리스트 버전 식별용).
+
+### 7.5 오탐 실험 (실제 사이트)
 
 목표: 공식 사이트의 정상 사용에서 경고가 **한 번도** 뜨지 않는지(오탐 0) 확인합니다.
 
@@ -245,7 +257,7 @@ pnpm e2e                          # 확장 빌드 → playground 기동 → Chro
 | swap.cow.fi | 주문 서명 | | | |
 | swap.cow.fi | EthFlow | | | |
 
-### 7.5 대조 실험 (MetaMask 기본 경고 / Rabby)
+### 7.6 대조 실험 (MetaMask 기본 경고 / Rabby)
 
 같은 S0–S11을 다음 세 조건에서 돌리고, **사용자가 위험을 알아챌 수 있는 표시**가 나오는지 기록합니다.
 
@@ -282,6 +294,7 @@ pnpm coverage
 pnpm lint
 pnpm playground
 pnpm e2e          # Playwright (처음엔 npx playwright install chromium)
+pnpm check:whitelist  # 메인넷 미검증 항목이 있으면 실패 (실험 전 필수)
 ```
 
 | 경로 | 내용 |
