@@ -41,7 +41,7 @@
 - 주소는 `getAddress()`로 정규화해서 비교
 - **완료 기준**: 더미 JSON으로 scoped/global, 일치/불일치 origin, 화이트리스트 없는 체인(protected/비protected origin) 테스트 통과
 
-### [x] 04 `feat(core): add Uniswap & CoW whitelist for mainnet/sepolia`
+### [x] 04 `feat(core): add Uniswap & CoW whitelist for mainnet/sepolia` — c9dda93
 - `1.json`, `11155111.json` 작성. 공식 문서에서만 수집하고 엔트리마다 `source` 기입
 - Uniswap: 공식 프론트엔드가 쓰는 router 전 버전, Permit2, (사용 시) UniswapX reactor
 - Uniswap others: 공식 프론트엔드가 swap 외에 직접 호출하는 컨트랙트 (NonfungiblePositionManager, V4 PositionManager 등)
@@ -51,9 +51,9 @@
 - 확인하지 못한 주소는 `verified: false`로 두고 커밋 본문에 목록 기재
 - **완료 기준**: 스키마 검증 테스트 통과. **사람이 주소를 검수한 뒤 다음 단계로** (리뷰 포인트 ①)
 
-### [ ] 05 `feat(core): decode approvals`
+### [x] 05 `feat(core): decode approvals`
 - `core/decode/approval.ts`
-  - tx: approve, increaseAllowance, setApprovalForAll
+  - tx: approve, increaseAllowance, setApprovalForAll, Permit2 `approve(token, spender, amount, expiration)`
   - typed data: EIP-2612 Permit, Permit2 (Single/Batch/TransferFrom/BatchTransferFrom/WitnessTransferFrom)
 - 무제한 판정 유틸: `amount >= 2n**160n - 1n`
 - typed data 입력은 v3/v4 공통 (문자열 JSON 또는 객체 모두 허용)
