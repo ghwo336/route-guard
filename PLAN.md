@@ -59,7 +59,7 @@
 - typed data 입력은 v3/v4 공통 (문자열 JSON 또는 객체 모두 허용)
 - **완료 기준**: 형식별 디코딩 테스트, 실제 모양의 샘플 fixture 사용
 
-### [x] 06 `feat(core): decode CoW orders`
+### [x] 06 `feat(core): decode CoW orders` — e856ae7
 - `core/decode/cow.ts`
   - typed data 주문: verifyingContract, receiver, sellToken, buyToken, buyAmount
   - EthFlow `createOrder(order)` calldata: receiver, buyToken, buyAmount (ABI는 cowprotocol/ethflowcontract 공식 소스에서 확인)
@@ -67,7 +67,7 @@
   - 주문 취소(EthFlow `invalidateOrder`, Settlement `invalidateOrder`) → `RouterNoop`
 - **완료 기준**: 주문·EthFlow 각각 receiver = 0x0 / 본인 / 타인 케이스, setPreSignature 디코딩 테스트
 
-### [ ] 07 `feat(core): decode router calls`
+### [x] 07 `feat(core): decode router calls`
 - `core/decode/router.ts`
   - UniversalRouter `execute`: command별 recipient, tokenOut, amountOutMin
   - SwapRouter02: exactInput*/exactOutput* + `multicall` 재귀

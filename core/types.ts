@@ -145,7 +145,7 @@ export type CowPreSignatureAction = {
   signed: boolean;
 };
 
-export type RouterKind = 'universal-router' | 'swap-router-02' | 'swap-proxy' | 'cow-ethflow';
+export type RouterKind = 'universal-router' | 'swap-router-02' | 'swap-proxy';
 
 /** A call into a router that moves funds to one or more recipients. */
 export type RouterCallAction = {

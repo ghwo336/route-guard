@@ -135,8 +135,17 @@ provider 래핑 대상:
 ### 8.3 router 호출
 진짜 router라도 수령 주소를 공격자로 바꾸면 자산이 탈취된다. 그래서 recipient까지 꺼낸다.
 - Uniswap **UniversalRouter** `execute(commands, inputs[, deadline])`: command별 input에서 `recipient`, 출력 토큰, `amountOutMin`을 추출한다(V2/V3/V4 swap, SWEEP, TRANSFER, UNWRAP_WETH 등). `MSG_SENDER`·`ADDRESS_THIS` 센티널 값은 정상으로 처리한다. 정확한 값은 공식 소스(Constants.sol)에서 확인한다.
+- **SwapProxy** (`execute(router, token, amount, commands, inputs, deadline)`): 내부 UR plan을 같은 방식으로 디코딩하고, `router` 인자가 화이트리스트 router인지도 확인한다.
 - **SwapRouter02**: `exactInput*`/`exactOutput*`의 `recipient`, `amountOutMinimum`. `multicall` 내부 호출은 재귀로 디코딩한다.
-- **최소 수령량은 호출 전체 기준으로 판단한다.** SDK는 분할 경로·네이티브 출력일 때 개별 swap의 min을 0으로 두고 마지막 `SWEEP`/`UNWRAP_WETH`(또는 `unwrapWETH9`/`sweepToken`)에서 한꺼번에 검사할 수 있다. 따라서 "사용자에게 최종으로 전달되는 단계"의 min이 0일 때만 R10이다. 정확한 동작은 07에서 universal-router-sdk / router-sdk 소스로 확인하고 확정한다.
+- **최소 수령량은 호출 전체 기준으로 판단한다.** SDK는 분할 경로·네이티브 출력일 때 개별 swap의 min을 0으로 두고 마지막 `SWEEP`/`UNWRAP_WETH`(또는 `unwrapWETH9`/`sweepToken`)에서 한꺼번에 검사할 수 있다. 따라서 "사용자에게 최종으로 전달되는 단계"의 min이 0일 때만 R10이다. **07에서 확정한 내용** (출처: [universal-router-sdk `entities/actions/uniswap.ts`](https://github.com/Uniswap/sdks/blob/main/sdks/universal-router-sdk/src/entities/actions/uniswap.ts)):
+  - `routerMustCustody`(3개 이상 분할 exact-in, 출력 형태 변환, 수수료, V2 exact-out 등)이면 각 swap leg는 recipient=`ADDRESS_THIS`, min=0으로 인코딩되고, 마지막 `SWEEP`/`UNWRAP_WETH`에 전체 min이 들어간다.
+  - 수수료는 `PAY_PORTION`/`PAY_PORTION_FULL_PRECISION`(또는 flat fee `TRANSFER`)로 fee recipient에게 보낸다 → `feeRecipients`.
+  - exact-output 거래 뒤의 잔액 환불 `SWEEP`/`UNWRAP_WETH`는 min=0이 정상이다.
+  - V4: exact-in은 swap action의 `amountOutMinimum`, exact-out은 정확한 금액의 `TAKE`가 floor다. `TAKE(…, 0)`은 OPEN_DELTA(전부 수령)라서 floor가 아니다.
+  - V2 exact-out swap 자체는 출력을 검사하지 않는다(floor 아님).
+  - `BALANCE_CHECK_ERC20`도 집계 floor로 본다.
+  - **판정**: 호출 전체(sub plan, multicall 포함)의 floor 중 최댓값을 `minAmountOut`으로 쓰고, swap이 있는데 이 값이 0일 때만 R10이다.
+  - UR 2.1.1부터 swap input 끝에 `minHopPriceX36`이 추가되고, V4 swap struct 레이아웃이 바뀐다(2.0과 다름). 화이트리스트의 router `version`으로 레이아웃을 고른다. 1.2에는 V4/sub plan이 없고 0x10 이상은 NFT command다.
 
 ### 8.4 기타
 - `transfer(to, amount)`, `transferFrom(from, to, amount)`
@@ -161,10 +170,10 @@ RiskLevel: `LOW` | `MEDIUM` | `HIGH`. 여러 규칙이 걸리면 가장 높은 �
 | R5 | 주문 | CoW 주문의 `verifyingContract`가 미등록 | **HIGH** |
 | R6 | 주문 | CoW 주문 또는 EthFlow `createOrder`의 `receiver`가 0x0도 서명자 본인도 아님 | **HIGH** |
 | R16 | 주문 | CoW `setPreSignature` (주문 내용 확인 불가) | MEDIUM |
-| R7 | router | `to`가 화이트리스트 router 또는 utility이고, recipient가 전부 본인 또는 센티널. 또는 `to`가 `others` (calldata 미해석) | LOW |
+| R7 | router | `to`가 화이트리스트 router 또는 utility이고, recipient가 전부 본인·센티널·`feeRecipients`. 또는 `to`가 `others` (calldata 미해석) | LOW |
 | R8 | router | `to`가 화이트리스트 router인데 recipient 중 하나가 본인이 아님 | **HIGH** |
 | R9 | router | router 호출인데 recipient 디코딩 실패 | MEDIUM ("수령 주소 확인 불가") |
-| R10 | router | 호출 전체 기준 최종 수령 단계의 최소 수령량이 0 (07에서 확정) | MEDIUM ("슬리피지 보호 없음") |
+| R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 (8.3) | MEDIUM ("슬리피지 보호 없음") |
 | R11 | 기타 | 미등록 `to`(routers/spenders/utilities/others 어디에도 없음)에 calldata 또는 ETH value 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM (받는 주소 그대로 표시) |
 | R13 | 기타 | 해석 불가 서명(personal_sign, eth_sign, eth_signTypedData v1), 알 수 없는 typed data | MEDIUM |
