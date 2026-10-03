@@ -307,3 +307,94 @@ Vyper 기본값 때문에 오버로드가 3개 생긴다.
 - (결정 1로 불필요해짐) SushiSwap executor `0xC10eE9031F2a0B84766A86B55a8D90F357910fb4`, 수수료 수령 주소 `0xFF64C2d5e23e9c48e8b42a23dc70055EEC9ea098`: 화이트리스트에 넣지 않는다.
 - Balancer 배포 바이트코드가 `main` 브랜치 인터페이스와 정확히 일치하는지는 확인하지 않았다(시그니처는 공식 SDK·인터페이스 기준).
 - Curve 운영 사이트 번들이 curve-js 2.70.2와 같은지는 확인하지 않았다(저장소와 npm 기준).
+
+---
+
+## 6. Phase 8 조사: 공식 router 경로 안의 임의 풀 (2026-10-03)
+
+> 재현 테스트: [core/gaps.test.ts](../core/gaps.test.ts). "KNOWN GAP" 테스트는 **현재의 안전하지 않은 판정을 고정**해 둔 것이다. 대응을 구현할 때 의도적으로 뒤집는다.
+
+### 6.1 Curve Router NG: 확인됨
+
+[`contracts/Router.vy`](https://github.com/curvefi/curve-router-ng/blob/master/contracts/Router.vy) `exchange` (v1.2.0)의 동작:
+```vyper
+assert ERC20(input_token).transferFrom(msg.sender, self, amount, default_return_value=True)   # 사용자 → router
+for i in range(5):
+    swap: address = _route[i * 2 + 1]                 # 풀 주소: calldata 그대로, 검증 없음
+    output_token = _route[(i + 1) * 2]
+    output_token_initial_balance = ERC20(output_token).balanceOf(self)
+    if not self.is_approved[input_token][swap]:
+        assert ERC20(input_token).approve(swap, max_value(uint256), ...)   # 임의 주소에 무제한 승인
+        self.is_approved[input_token][swap] = True
+    ...
+    StablePool(swap).exchange(i, j, amount, 0)       # 임의 컨트랙트 호출, 풀 단위 min = 0
+    amount = 잔고 변화량
+...
+assert amount >= _min_dy, "Slippage"                  # 최종 출력만 검사
+```
+- **결론**: `_route`의 풀 자리에 공격자 컨트랙트를 넣으면, router가 그 컨트랙트에 입력 토큰을 **무제한 승인**하고 `exchange`를 호출한다. 가짜 풀은 입력을 전부 가져가고 진짜 WETH 1 wei만 돌려주면 된다. `_min_dy = 1`이면 통과한다.
+- **현재 판정**: 공식 router(R11 아님) + 수령인 본인(R8 아님) + min_dy > 0(R10 아님)이라 **LOW(R7)**다. 경고창에도 "받을 토큰 WETH"로 정상처럼 보인다.
+- **피해 범위**: 이번 tx의 `_amount`다. `_amount`도 calldata라 사용자 잔고 전체로 설정할 수 있다. router에 남는 무제한 승인은 router가 tx 사이에 자금을 보유하지 않으므로 추가 피해는 거의 없다.
+
+### 6.2 Balancer: 풀 등록은 누구나 할 수 있지만 정산은 Vault가 한다
+
+- **누구나 풀 등록 가능**
+  - V2 [`PoolRegistry.registerPool`](https://github.com/balancer/balancer-v2-monorepo/blob/master/pkg/vault/contracts/PoolRegistry.sol): 접근 제어가 없다. `poolId`는 `msg.sender`(풀 컨트랙트)에서 만들어진다.
+  - V3 [`VaultExtension.registerPool`](https://github.com/balancer/balancer-v3-monorepo/blob/main/pkg/vault/contracts/VaultExtension.sol): 파일 주석이 "permissionless functions"이고, 검증은 토큰 구성만 한다.
+- **정산 구조가 Curve와 다르다**
+  - 사용자가 승인한 대상은 Vault(V2)나 Permit2→Router(V3)다. 풀에는 **승인이 넘어가지 않는다.**
+  - Vault는 GIVEN_IN의 `amount`(V3는 `exactAmountIn`)만 가져가고, 출력이 `limit`(`minAmountOut`) 이상인지 확인한다.
+  - 악성 풀은 수학(hook 포함)으로 출력을 최소로 만든 뒤, 자기 Vault 잔고에 쌓인 입력을 유동성 제거로 빼낼 수 있다.
+- **결론**: 피해는 "이번 tx의 입력량 − 최소 수령량"으로 제한된다. Curve처럼 임의 컨트랙트에 승인이 넘어가지는 않는다. 하지만 **min을 1 wei로 두면 결과적으로 입력 전체를 잃는다는 점은 같다.** 재현 결과, 현재 LOW(R7)이다.
+
+### 6.3 이건 "최소 수령량이 의미 없이 작다"는 문제다 (R10 한계)
+
+Curve, Balancer, Uniswap 모두 공통으로, 공격자가 경로(풀·hook·가짜 토큰)를 고르고 min을 1 wei로 두면 입력을 잃는다.
+- Uniswap V2·V3 풀은 factory로 주소가 정해져 임의 코드가 아니다. 하지만 공격자가 만든 가짜 토큰 풀이나 불균형 풀을 거치면 같은 결과다(README "가짜 토큰 경로").
+- Uniswap V4는 PoolKey에 **임의 hook 주소**가 들어가므로 같은 종류의 문제가 있다.
+
+근본 대응은 "시세 대비 min이 적정한가"인데, 가격 조회를 하지 않는 정책이라 판단할 수 없다(README: "R10은 1 wei 등으로 우회 가능한 보조 휴리스틱"). 아래 선택지는 **"임의 코드 풀"이라는 가장 쉬운 경로를 막는 것**이다.
+
+### 6.4 대응 선택지 (Curve)
+
+**Curve API 풀 규모** (`https://api.curve.finance/v1/getPools/{registry}/ethereum`, 2026-10-03 조회, 총 2,477개)
+
+| registry | 풀 수 | TVL ≥ $100K | TVL < $1K | 배포 |
+|---|---|---|---|---|
+| main | 49 | 23 | 4 | Curve 팀 큐레이션 |
+| crypto | 8 | 4 | 3 | Curve 팀 큐레이션 |
+| factory | 381 | 26 | 298 | **누구나 배포** (공식 구현 코드) |
+| factory-crypto | 401 | 14 | 340 | 누구나 배포 |
+| factory-stable-ng | 1,065 | 130 | 798 | 누구나 배포 |
+| factory-twocrypto | 419 | 27 | 356 | 누구나 배포 |
+| factory-tricrypto | 125 | 8 | 103 | 누구나 배포 |
+
+**(A) Curve 공식 API 풀 목록의 정적 스냅샷을 화이트리스트로 쓴다**
+- `_route`의 모든 풀이 스냅샷에 있을 때만 R7, 아니면 R9 또는 R11. 스냅샷은 체인별로 저장하고 출처 URL과 날짜를 기록한다. 런타임 조회는 없다(정책 유지).
+- **막을 수 있는 것**: 임의 코드 컨트랙트(진짜 가짜 풀). 6.1의 재현 시나리오가 여기에 해당한다.
+- **못 막는 것**: factory 풀은 공식 코드지만 **누구나 배포하고 유동성을 넣을 수 있다.** 공격자가 만든 불균형 factory 풀 + min 1 wei는 여전히 통과한다. "전체 2,477개"를 넣으면 이 경로가 열려 있다. "TVL ≥ $100K"(약 232개)로 거르면 많이 줄지만, TVL은 시점에 따라 변하고 새 풀이나 작은 풀을 쓰는 정상 스왑이 경고된다.
+- 비용: 풀 목록 갱신 절차가 필요하다(`pnpm check:whitelist`와 같은 출처·날짜 관리).
+
+**(B) Router NG `exchange`를 Sushi처럼 항상 R9 MEDIUM으로 판정한다**
+- 구현이 단순하고 우회 여지가 없다.
+- 대가: **Curve 메인 Swap 페이지의 모든 정상 스왑이 구조적 오탐(MEDIUM)**이 된다. 지금은 LOW다.
+
+**(C) 절충**: 스냅샷(main + crypto + TVL 기준을 넘는 factory)에 있는 풀만 R7로 판정하고, 하나라도 없으면 R9로 판정한다.
+- 정상 사용자의 대부분은 유동성 큰 풀을 지나므로 LOW로 남는다.
+- 임의 코드 풀과 작은 factory 풀 경로는 MEDIUM이 된다.
+- 기준(TVL 임계값, 갱신 주기)을 정해야 한다.
+
+**추천은 (C)다.** (B)는 안전하지만 Curve 정상 사용 전체를 MEDIUM으로 만들어 경고 피로를 키운다. (A)를 전체 목록으로 하면 factory 풀 경로가 그대로 열린다. 어느 쪽이든 "min 1 wei" 문제는 남으므로(6.3) 한계 문서는 그대로 둔다.
+
+### 6.5 Balancer 제안
+
+- Curve와 달리 임의 컨트랙트에 승인이 넘어가지 않으므로 **현재 판정을 유지하고 한계로 문서화**하는 걸 제안한다.
+- 같은 수준의 방어를 원하면 Curve (C)와 같은 방식(Balancer API 풀 스냅샷 + 미등록 풀 R9)을 적용할 수 있다.
+  - V2는 `poolId`(풀 주소 포함), V3는 `pool` 주소와 BatchRouter `steps[].pool`이 calldata에 있으므로 디코딩은 가능하다.
+- V3 hook도 풀 등록 시 지정되는 임의 컨트랙트다. 풀 스냅샷을 쓰면 hook도 그 풀의 일부로 같이 신뢰하게 된다.
+
+### 6.6 결정이 필요한 것
+
+1. Curve: (A) 전체 스냅샷 / (B) 항상 R9 / **(C) 스냅샷 + 미등록 풀 R9 (추천)**. (C)라면 TVL 임계값과 갱신 주기
+2. Balancer: 한계로 문서화만 (추천) / Curve와 같은 스냅샷 방식
+3. Uniswap V4 hook(임의 코드)을 같은 관점에서 다룰지 (지금은 hook을 검사하지 않음)

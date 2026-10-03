@@ -258,12 +258,13 @@
 ### [x] 42 `feat(core): separate Balancer relayers from spenders` — 5ea5d8f
 - 화이트리스트 스키마에 `relayers` 추가. relayer 승인(R1/R3)은 `relayers` 기준, relayer 주소로의 ERC-20 approve는 미등록 spender(R2)
 
-### [x] 43 `docs: note SushiSwap normal swaps as a structural false positive`
+### [x] 43 `docs: note SushiSwap normal swaps as a structural false positive` — db5bcc8
 - README 7.5에 "구조적 오탐" 표(Sushi 전 스왑 MEDIUM, Curve 풀 페이지 HIGH, Balancer auraBAL MEDIUM)와 별도 집계 안내
 
-### [ ] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap`
+### [x] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap`
 - Router NG가 `_route`의 풀 주소에 토큰을 승인·전송하고 `exchange`를 호출하는지 소스로 확인, 공식 router + 본인 수령 + 가짜 풀 + min_dy=1이 현재 판정으로 통과하는지 재현. 대응 선택지(A: Curve API 풀 스냅샷 / B: 항상 R9)와 Balancer 검토는 제안만
-- **여기서 멈추고 결정 대기**
+- 결과: Curve 확인(임의 풀에 무제한 approve + exchange 호출, 재현 시 LOW). Balancer는 풀 등록은 누구나 할 수 있지만 Vault 정산이라 입력량 − min으로 제한. 선택지와 추천은 `docs/protocols-phase7.md` 6장
+- **여기서 멈추고 결정 대기 (리뷰 포인트 ⑥)**
 
 ---
 
@@ -274,6 +275,7 @@
 3. **14 이후**: 실제 지갑 두 개로 수동 테스트 (실제 Uniswap/CoW에서 오탐 없는지 포함)
 4. **17 이후**: `pnpm check:whitelist` 통과 확인 후 4장 실험 진행
 5. **33 이후**: `docs/protocols-phase7.md` 검토. 특히 문서 상단 "리뷰 포인트 ⑤에서 결정할 것" 4개(Sushi executor 스키마 확장, Curve 풀 직접 호출 R11 처리, Balancer Relayer 처리, 리다이렉트 origin)
+6. **44 이후**: `docs/protocols-phase7.md` 6장 "결정이 필요한 것" (Curve 임의 풀 대응 A/B/C, Balancer, Uniswap V4 hook)
 
 ---
 
