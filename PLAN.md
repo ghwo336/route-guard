@@ -240,9 +240,13 @@
 - 메인넷·Sepolia. origins `balancer.fi`·`www.balancer.fi`(앱 실행 미확인)·`app.balancer.fi`(리다이렉트) / routers: Vault V2, V3 Router v2, V3 BatchRouter, Relayer v6 / spenders: Vault V2, Permit2, Relayer v6(relayer 승인 판정용)
 ### [x] 37 `feat(core): decode SushiSwap RedSnwapper calls` — 27fe02b
 - `snwap` / `snwapMultiple`: recipient(들)·tokenOut·minOut 추출, 실행 경로는 항상 R9("실행 경로를 검증할 수 없는 스왑(임의 executor)", 최소 수령량 표시)
-### [x] 38 `feat(core): decode Curve Router NG calls`
+### [x] 38 `feat(core): decode Curve Router NG calls` — 5da9267
 - `exchange` 3개 오버로드: 6인자는 `_receiver`, 4·5인자는 `msg.sender`. 출력 토큰은 Router.vy 루프와 같은 방식으로 `_route`에서 계산, minOut = `_min_dy`
-### [ ] 39 `feat(core): decode Balancer V2/V3 swaps`
+### [x] 39 `feat(core): decode Balancer V2/V3 swaps`
+- V2 Vault `swap`/`batchSwap`: `funds.recipient`, floor = GIVEN_IN `limit` / GIVEN_OUT `amount` / batch는 음수 limit의 절댓값(음수 limit이 없으면 R10 미적용, 주석에 이유)
+- V3 Router·BatchRouter: recipient = `msg.sender`, `permitBatchAndCall`·`multicall` 안쪽 호출 디코딩. Relayer v6 multicall은 R9
+- relayer 승인: `setRelayerApproval` tx와 `Balancer V2 Vault` EIP-712 서명 → 미등록 R3 / 공식 R1 / 해제 R4
+- `multicall(bytes[])` selector 충돌(SwapRouter02) 때문에 `to`가 Balancer면 Balancer 디코더를 먼저 시도
 ### [ ] 40 `test(core): Phase 7 protocol scenarios`
 - 프로토콜마다 정상 LOW / recipient=ATTACKER R8 / approve(ATTACKER) R2 / 미등록 컨트랙트 R11. Sepolia 배포가 있는 프로토콜(Sushi, Balancer)만 playground S12~
 ### [ ] 41 `docs: README protocol table, limits, DNS hijack notes`

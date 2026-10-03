@@ -166,25 +166,23 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
 
     case 'setApprovalForAll': {
       const who = describeAddress(action.operator, allowed);
-      const collection = shortAddress(action.to);
+      // what is being delegated: an NFT collection, or (Balancer) the user's Vault funds
+      const relayer = action.scope === 'balancer-relayer';
+      const grant = relayer
+        ? 'Balancer Vault relayer 권한(Vault 자산과 Vault에 승인한 토큰을 대신 움직임)'
+        : `컬렉션 ${shortAddress(action.to)} 전체 권한`;
       let hit: RuleHit;
       if (!action.approved) {
-        hit = {
-          ruleId: 'R4',
-          level: 'LOW',
-          message: `${who}의 컬렉션 ${collection} 전체 권한을 회수합니다.`,
-        };
+        hit = { ruleId: 'R4', level: 'LOW', message: `${who}의 ${grant}을 회수합니다.` };
       } else if (has(allowed.spenders, action.operator)) {
-        hit = {
-          ruleId: 'R1',
-          level: 'LOW',
-          message: `공식 주소 ${who}에게 컬렉션 ${collection} 전체 권한을 줍니다.`,
-        };
+        hit = { ruleId: 'R1', level: 'LOW', message: `공식 주소 ${who}에게 ${grant}을 줍니다.` };
       } else {
         hit = {
           ruleId: 'R3',
           level: 'HIGH',
-          message: `등록되지 않은 주소 ${who}에게 컬렉션 ${collection}의 모든 NFT 권한을 줍니다.`,
+          message: relayer
+            ? `등록되지 않은 주소 ${who}에게 ${grant}을 줍니다.`
+            : `등록되지 않은 주소 ${who}에게 컬렉션 ${shortAddress(action.to)}의 모든 NFT 권한을 줍니다.`,
         };
       }
       return {
@@ -192,7 +190,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
         details: {
           target: action.to,
           spender: action.operator,
-          token: action.to,
+          token: relayer ? undefined : action.to,
           matchedDex: dexOf(allowed, action.operator),
         },
       };

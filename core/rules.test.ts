@@ -4,6 +4,7 @@ import { analyze } from './analyze';
 import { ATTACKER, TOKENS, USER } from './fixtures/addresses';
 import * as c from './fixtures/calldata';
 import * as r from './fixtures/router';
+import * as proto from './fixtures/protocols';
 import { NATIVE_EEEE, sushiSnwap } from './fixtures/protocols';
 import {
   cowOrder,
@@ -514,6 +515,76 @@ describe('SushiSwap RedSnwapper (review decision 1: always R9)', () => {
     const v = run(tx(RS, snwap(USER, 1n).slice(0, 80), undefined, SUSHI));
     expect(v.ruleIds).toEqual(['R9']);
     expect(v.summary).toContain('최소 수령량: 확인 불가');
+  });
+});
+
+describe('Balancer (review decision 3)', () => {
+  const BAL = 'https://balancer.fi';
+  const VAULT: Address = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
+  const ROUTER: Address = '0xAE563E3f8219521950555F5962419C8919758Ea2';
+  const RELAYER: Address = '0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f';
+
+  it('relayer approval: unregistered → R3, official → R1, revoke → R4', () => {
+    const r3 = expectRule(
+      tx(VAULT, proto.balancerSetRelayerApproval(USER, ATTACKER, true), undefined, BAL),
+      'HIGH',
+      ['R3'],
+    );
+    expect(r3.summary).toBe(
+      '등록되지 않은 주소 0xBAdB…BAD0에게 Balancer Vault relayer 권한(Vault 자산과 Vault에 승인한 토큰을 대신 움직임)을 줍니다.',
+    );
+    expect(r3.details.token).toBeUndefined();
+    expectRule(
+      tx(VAULT, proto.balancerSetRelayerApproval(USER, RELAYER, true), undefined, BAL),
+      'LOW',
+      ['R1'],
+    );
+    const r4 = expectRule(
+      tx(VAULT, proto.balancerSetRelayerApproval(USER, ATTACKER, false), undefined, BAL),
+      'LOW',
+      ['R4'],
+    );
+    expect(r4.summary).toContain('relayer 권한');
+  });
+
+  it('relayer approval signed as EIP-712 is judged the same way', () => {
+    const payload = proto.balancerRelayerAuthorization({
+      chainId: 1,
+      vault: VAULT,
+      primaryType: 'SetRelayerApproval',
+      calldata: proto.balancerSetRelayerApproval(USER, ATTACKER, true),
+      sender: ATTACKER,
+    });
+    expectRule(sign(payload, BAL), 'HIGH', ['R3']);
+  });
+
+  it('V3 router multicall is decoded as Balancer, not as Uniswap SwapRouter02', () => {
+    const swap = proto.balancerV3SwapSingle({
+      tokenIn: USDC,
+      tokenOut: WETH,
+      amount: 1n,
+      limit: 1n,
+    });
+    const v = expectRule(tx(ROUTER, proto.balancerMulticall([swap]), undefined, BAL), 'LOW', [
+      'R7',
+    ]);
+    expect(v.details.recipients).toEqual(['0x0000000000000000000000000000000000000001']);
+  });
+
+  it('Relayer v6 multicall → R9 (not interpreted)', () => {
+    expectRule(tx(RELAYER, proto.balancerMulticall(['0x12345678']), undefined, BAL), 'MEDIUM', [
+      'R9',
+    ]);
+  });
+
+  it('V2 batchSwap without a negative limit: no R10 (floor unknown)', () => {
+    const data = proto.balancerV2BatchSwap({
+      sender: USER,
+      recipient: USER,
+      assets: [USDC, WETH],
+      limits: [100n, 0n],
+    });
+    expectRule(tx(VAULT, data, undefined, BAL), 'LOW', ['R7']);
   });
 });
 

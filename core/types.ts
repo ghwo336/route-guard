@@ -103,8 +103,14 @@ export type ApproveAction = {
   amount: bigint;
 };
 
+/**
+ * Operator-style approval over everything: ERC-721/1155 setApprovalForAll, or a Balancer V2
+ * Vault relayer approval (scope 'balancer-relayer': the relayer may move the user's Vault
+ * balances and Vault-approved tokens).
+ */
 export type SetApprovalForAllAction = {
   kind: 'setApprovalForAll';
+  scope?: 'balancer-relayer';
   to: Address;
   operator: Address;
   approved: boolean;

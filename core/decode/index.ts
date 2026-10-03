@@ -6,6 +6,7 @@ import { decodeMiscTx } from './misc';
 import { decodeRouterTx } from './router';
 import { decodeSushiTx } from './sushiswap';
 import { decodeCurveTx } from './curve';
+import { decodeBalancerTx, decodeBalancerTypedData } from './balancer';
 import { parseTypedData, splitTypedDataParams } from './typedData';
 import { asAddress, asHex, isRecord, toBigInt } from './util';
 
@@ -14,6 +15,8 @@ export type DecodeContext = {
   versionOf: (address: Address) => string | undefined;
   /** Whether `to` is a whitelisted `others` contract (calldata not interpreted). */
   isOther: (address: Address) => boolean;
+  /** DEX of a whitelisted router, used to resolve selector collisions (e.g. multicall). */
+  dexOf?: (address: Address) => string | undefined;
 };
 
 export type DecodedRequest = {
@@ -56,12 +59,17 @@ export function decodeTx(tx: unknown, ctx: DecodeContext): DecodedAction {
   if (!hasData) return { kind: 'unknownCall', to, value, hasData };
 
   try {
+    // Balancer routers first: their multicall(bytes[]) shares a selector with SwapRouter02.
+    const balancerFirst =
+      ctx.dexOf?.(to) === 'balancer' ? decodeBalancerTx(to, data, value) : undefined;
     return (
+      balancerFirst ??
       decodeApprovalTx(to, data) ??
       decodeCowTx(to, data) ??
       decodeRouterTx(to, data, value, ctx.versionOf) ??
       decodeSushiTx(to, data, value) ??
       decodeCurveTx(to, data, value) ??
+      decodeBalancerTx(to, data, value) ??
       decodeMiscTx(to, data, value) ?? { kind: 'unknownCall', to, value, hasData }
     );
   } catch (e) {
@@ -84,7 +92,8 @@ function decodeTypedData(params: unknown, fallbackSigner?: Address): DecodedRequ
   }
   const action: DecodedAction = decodePermit2(td) ??
     decodePermit(td) ??
-    decodeCowOrder(td) ?? {
+    decodeCowOrder(td) ??
+    decodeBalancerTypedData(td) ?? {
       kind: 'unknownTypedData',
       primaryType: td.primaryType,
       domainName: td.domainName,

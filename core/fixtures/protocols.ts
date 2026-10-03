@@ -88,3 +88,206 @@ export function curveExchange(o: {
     args: [route, swapParams, o.amount, o.minDy, pools],
   });
 }
+
+// --- Balancer ---------------------------------------------------------------
+
+const FUNDS =
+  '(address sender, bool fromInternalBalance, address recipient, bool toInternalBalance)';
+const balV2Abi = parseAbi([
+  `function swap((bytes32 poolId, uint8 kind, address assetIn, address assetOut, uint256 amount, bytes userData) singleSwap, ${FUNDS} funds, uint256 limit, uint256 deadline) payable returns (uint256)`,
+  `function batchSwap(uint8 kind, (bytes32 poolId, uint256 assetInIndex, uint256 assetOutIndex, uint256 amount, bytes userData)[] swaps, address[] assets, ${FUNDS} funds, int256[] limits, uint256 deadline) payable returns (int256[])`,
+  'function setRelayerApproval(address sender, address relayer, bool approved)',
+]);
+const balV3Abi = parseAbi([
+  'struct SwapPathStep { address pool; address tokenOut; bool isBuffer; }',
+  'struct SwapPathExactAmountIn { address tokenIn; SwapPathStep[] steps; uint256 exactAmountIn; uint256 minAmountOut; }',
+  'struct SwapPathExactAmountOut { address tokenIn; SwapPathStep[] steps; uint256 maxAmountIn; uint256 exactAmountOut; }',
+  'function swapSingleTokenExactIn(address pool, address tokenIn, address tokenOut, uint256 exactAmountIn, uint256 minAmountOut, uint256 deadline, bool wethIsEth, bytes userData) payable returns (uint256)',
+  'function swapSingleTokenExactOut(address pool, address tokenIn, address tokenOut, uint256 exactAmountOut, uint256 maxAmountIn, uint256 deadline, bool wethIsEth, bytes userData) payable returns (uint256)',
+  'function swapExactIn(SwapPathExactAmountIn[] paths, uint256 deadline, bool wethIsEth, bytes userData) payable',
+  'function swapExactOut(SwapPathExactAmountOut[] paths, uint256 deadline, bool wethIsEth, bytes userData) payable',
+  'function permitBatchAndCall((address token, address owner, address spender, uint256 amount, uint256 nonce, uint256 deadline)[] permitBatch, bytes[] permitSignatures, ((address token, uint160 amount, uint48 expiration, uint48 nonce)[] details, address spender, uint256 sigDeadline) permit2Batch, bytes permit2Signature, bytes[] multicallData) payable',
+  'function multicall(bytes[] data) payable',
+]);
+
+const POOL_ID: Hex = `0x${'11'.repeat(32)}`;
+const funds = (sender: Address, recipient: Address, toInternalBalance = false) => ({
+  sender,
+  fromInternalBalance: false,
+  recipient,
+  toInternalBalance,
+});
+
+export function balancerV2Swap(o: {
+  sender: Address;
+  recipient: Address;
+  assetIn: Address;
+  assetOut: Address;
+  amount: bigint;
+  limit: bigint;
+  givenOut?: boolean;
+  toInternalBalance?: boolean;
+}): Hex {
+  return encodeFunctionData({
+    abi: balV2Abi,
+    functionName: 'swap',
+    args: [
+      {
+        poolId: POOL_ID,
+        kind: o.givenOut ? 1 : 0,
+        assetIn: o.assetIn,
+        assetOut: o.assetOut,
+        amount: o.amount,
+        userData: '0x',
+      },
+      funds(o.sender, o.recipient, o.toInternalBalance),
+      o.limit,
+      2n ** 53n,
+    ],
+  });
+}
+
+export function balancerV2BatchSwap(o: {
+  sender: Address;
+  recipient: Address;
+  assets: Address[];
+  limits: bigint[];
+}): Hex {
+  return encodeFunctionData({
+    abi: balV2Abi,
+    functionName: 'batchSwap',
+    args: [
+      0,
+      [
+        {
+          poolId: POOL_ID,
+          assetInIndex: 0n,
+          assetOutIndex: BigInt(o.assets.length - 1),
+          amount: 1n,
+          userData: '0x',
+        },
+      ],
+      o.assets,
+      funds(o.sender, o.recipient),
+      o.limits,
+      2n ** 53n,
+    ],
+  });
+}
+
+export function balancerSetRelayerApproval(
+  sender: Address,
+  relayer: Address,
+  approved: boolean,
+): Hex {
+  return encodeFunctionData({
+    abi: balV2Abi,
+    functionName: 'setRelayerApproval',
+    args: [sender, relayer, approved],
+  });
+}
+
+export function balancerV3SwapSingle(o: {
+  tokenIn: Address;
+  tokenOut: Address;
+  amount: bigint;
+  limit: bigint;
+  exactOut?: boolean;
+}): Hex {
+  const args = [ZERO, o.tokenIn, o.tokenOut, o.amount, o.limit, 2n ** 53n, false, '0x'] as const;
+  return o.exactOut
+    ? encodeFunctionData({ abi: balV3Abi, functionName: 'swapSingleTokenExactOut', args })
+    : encodeFunctionData({ abi: balV3Abi, functionName: 'swapSingleTokenExactIn', args });
+}
+
+export function balancerV3SwapExactIn(
+  paths: { tokenIn: Address; tokenOut: Address; amountIn: bigint; minOut: bigint }[],
+): Hex {
+  return encodeFunctionData({
+    abi: balV3Abi,
+    functionName: 'swapExactIn',
+    args: [
+      paths.map((p) => ({
+        tokenIn: p.tokenIn,
+        steps: [{ pool: ZERO, tokenOut: p.tokenOut, isBuffer: false }],
+        exactAmountIn: p.amountIn,
+        minAmountOut: p.minOut,
+      })),
+      2n ** 53n,
+      false,
+      '0x',
+    ],
+  });
+}
+
+export function balancerV3SwapExactOut(
+  paths: { tokenIn: Address; tokenOut: Address; maxIn: bigint; exactOut: bigint }[],
+): Hex {
+  return encodeFunctionData({
+    abi: balV3Abi,
+    functionName: 'swapExactOut',
+    args: [
+      paths.map((p) => ({
+        tokenIn: p.tokenIn,
+        steps: [{ pool: ZERO, tokenOut: p.tokenOut, isBuffer: false }],
+        maxAmountIn: p.maxIn,
+        exactAmountOut: p.exactOut,
+      })),
+      2n ** 53n,
+      false,
+      '0x',
+    ],
+  });
+}
+
+/** b-sdk buildCallWithPermit2: the swap call wrapped with an (already signed) Permit2 batch. */
+export function balancerPermitBatchAndCall(calls: Hex[], spender: Address): Hex {
+  return encodeFunctionData({
+    abi: balV3Abi,
+    functionName: 'permitBatchAndCall',
+    args: [[], [], { details: [], spender, sigDeadline: 2n ** 53n }, '0x', calls],
+  });
+}
+
+export function balancerMulticall(calls: Hex[]): Hex {
+  return encodeFunctionData({ abi: balV3Abi, functionName: 'multicall', args: [calls] });
+}
+
+/** b-sdk RelayerAuthorization.signAuthorizationFor payload. */
+export function balancerRelayerAuthorization(o: {
+  chainId: number;
+  vault: Address;
+  primaryType: 'SetRelayerApproval' | 'Swap' | 'BatchSwap' | 'JoinPool';
+  calldata: Hex;
+  sender: Address;
+}) {
+  return {
+    types: {
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' },
+      ],
+      [o.primaryType]: [
+        { name: 'calldata', type: 'bytes' },
+        { name: 'sender', type: 'address' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+      ],
+    },
+    domain: {
+      name: 'Balancer V2 Vault',
+      version: '1',
+      chainId: o.chainId,
+      verifyingContract: o.vault,
+    },
+    primaryType: o.primaryType,
+    message: {
+      calldata: o.calldata,
+      sender: o.sender,
+      nonce: '0',
+      deadline: (2n ** 256n - 1n).toString(),
+    },
+  };
+}

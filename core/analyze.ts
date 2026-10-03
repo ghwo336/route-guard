@@ -26,6 +26,7 @@ function contextFor(scope: Scope): DecodeContext {
   return {
     versionOf: (a) => scope.allowed.routers.get(a)?.version,
     isOther: (a) => scope.allowed.others.has(a),
+    dexOf: (a) => scope.allowed.routers.get(a)?.dex,
   };
 }
 
