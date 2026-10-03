@@ -272,7 +272,9 @@
 - 최소 수령량이 0이거나, `tokens.json`에 decimals가 있는 출력 토큰 기준 0.000001 토큰 미만이면 R10. decimals를 모르면 기존대로 0일 때만
 - `core/gaps.test.ts`: "min 1 wei" 재현은 이제 MEDIUM, "min = 입력의 1%"는 알려진 한계(현재 LOW)로 추가
 
-### [x] 46 `docs: classify attack types (approval / recipient / route+min)`
+### [x] 46 `docs: classify attack types (approval / recipient / route+min)` — 5331767
+
+> **태그 `v0.1-research`**: 46번까지 반영된 상태. 이후 4장 실험 결과에는 이 태그를 기록한다.
 - `docs/protocols-phase7.md` 6장과 README 한계에 3분류 표. Curve·Balancer 임의 풀, Uniswap V4 hook, 가짜 토큰 경로는 3번째 분류. V4 hook 검사는 추가하지 않음
 
 ---
