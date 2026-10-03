@@ -228,11 +228,12 @@
 
 목표: Uniswap/CoW와 같은 수준(공식 주소 화이트리스트 + calldata 안의 recipient 검증). 라우터 주소만 추가하는 건 금지. 규칙 번호·판정 로직은 바꾸지 않는다. 애그리게이터는 범위 밖.
 
-### [x] 33 `docs: research SushiSwap, Curve, Balancer contracts`
+### [x] 33 `docs: research SushiSwap, Curve, Balancer contracts` — 51debd0
 - `docs/protocols-phase7.md`: 공식 도메인, router·spender 주소와 버전, 스왑 함수의 recipient·minOut·출력 토큰 위치, Sepolia 여부, 한계
 - 리뷰 포인트 ⑤ 결정 반영: Sushi `snwap`은 항상 R9 / Curve 풀 직접 스왑은 R11+한계 / Balancer Relayer v6는 router+R9, relayer 승인은 R3·R4 / 리다이렉트 도메인도 보호 origin
 
-### [ ] 34 `feat(core): add SushiSwap whitelist`
+### [x] 34 `feat(core): add SushiSwap whitelist`
+- origins `sushi.com`(리다이렉트), `www.sushi.com` / RedSnwapper = router·spender (메인넷·Sepolia). executor·수수료 주소는 넣지 않음
 ### [ ] 35 `feat(core): add Curve whitelist`
 ### [ ] 36 `feat(core): add Balancer whitelist`
 ### [ ] 37 `feat(core): decode SushiSwap RedSnwapper calls`

@@ -151,6 +151,27 @@
       ],
       "others": [],
       "feeRecipients": []
+    },
+    "sushiswap": {
+      "origins": ["https://sushi.com", "https://www.sushi.com"],
+      "routers": [
+        {
+          "address": "0xAC4c6e212A361c968F1725b4d055b47E63F80b75",
+          "label": "RedSnwapper",
+          "source": "https://github.com/sushi-labs/sushi/blob/5082d90dc76a87aaf731e9f3668384869ddf885b/src/evm/config/features/red-snwapper.ts",
+          "verified": true
+        }
+      ],
+      "spenders": [
+        {
+          "address": "0xAC4c6e212A361c968F1725b4d055b47E63F80b75",
+          "label": "RedSnwapper",
+          "source": "https://github.com/sushi-labs/sushi/blob/5082d90dc76a87aaf731e9f3668384869ddf885b/src/evm/config/features/red-snwapper.ts",
+          "verified": true
+        }
+      ],
+      "others": [],
+      "feeRecipients": []
     }
   },
   "utilities": [

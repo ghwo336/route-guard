@@ -54,7 +54,7 @@ describe('bundled whitelists', () => {
 
   it('the playground origin covers both DEXes on Sepolia', () => {
     const s = resolveScope(PLAYGROUND, 11155111, 'scoped', BUNDLED_WHITELISTS);
-    expect(s.dexes).toEqual(['uniswap', 'cow']);
+    expect(s.dexes).toEqual(['uniswap', 'cow', 'sushiswap']);
   });
 
   it('Permit2 is a Uniswap spender on both chains', () => {
@@ -62,6 +62,20 @@ describe('bundled whitelists', () => {
       const s = resolveScope('https://app.uniswap.org', chainId, 'scoped', BUNDLED_WHITELISTS);
       expect(lookup(s.allowed, PERMIT2)?.entry.label).toBe('Permit2');
     }
+  });
+
+  it('SushiSwap: redirect domain is protected too; RedSnwapper is router and spender', () => {
+    const RS = '0xAC4c6e212A361c968F1725b4d055b47E63F80b75';
+    for (const origin of ['https://sushi.com', 'https://www.sushi.com']) {
+      const s = resolveScope(origin, 1, 'scoped', BUNDLED_WHITELISTS);
+      expect(s.dexes).toEqual(['sushiswap']);
+      expect(s.allowed.routers.get(RS)?.label).toBe('RedSnwapper');
+      expect(s.allowed.spenders.get(RS)?.label).toBe('RedSnwapper');
+      expect(s.allowed.routers.size).toBe(1);
+    }
+    expect(
+      resolveScope('https://www.sushi.com', 11155111, 'scoped', BUNDLED_WHITELISTS).dexes,
+    ).toEqual(['sushiswap']);
   });
 
   it('CoW scope does not include Uniswap contracts', () => {
