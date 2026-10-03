@@ -123,7 +123,8 @@
           "source": "https://github.com/Uniswap/util-contracts/blob/main/README.md",
           "verified": true
         }
-      ]
+      ],
+      "relayers": []
     },
     "cow": {
       "origins": ["https://swap.cow.fi"],
@@ -150,7 +151,8 @@
         }
       ],
       "others": [],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "sushiswap": {
       "origins": ["https://sushi.com", "https://www.sushi.com"],
@@ -171,7 +173,8 @@
         }
       ],
       "others": [],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "curve": {
       "origins": [
@@ -197,7 +200,8 @@
         }
       ],
       "others": [],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "balancer": {
       "origins": ["https://balancer.fi", "https://www.balancer.fi", "https://app.balancer.fi"],
@@ -239,16 +243,18 @@
           "label": "Permit2",
           "source": "https://github.com/balancer/balancer-deployments/blob/master/v3/tasks/00000000-permit2/output/mainnet.json",
           "verified": true
-        },
+        }
+      ],
+      "others": [],
+      "feeRecipients": [],
+      "relayers": [
         {
           "address": "0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f",
           "label": "BalancerRelayer v6",
           "source": "https://github.com/balancer/balancer-deployments/blob/master/v2/tasks/20231031-batch-relayer-v6/output/mainnet.json",
           "verified": true
         }
-      ],
-      "others": [],
-      "feeRecipients": []
+      ]
     }
   },
   "utilities": [

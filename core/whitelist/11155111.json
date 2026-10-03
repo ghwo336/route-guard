@@ -110,7 +110,8 @@
           "verified": true
         }
       ],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "cow": {
       "origins": ["https://swap.cow.fi", "http://localhost:5173"],
@@ -137,7 +138,8 @@
         }
       ],
       "others": [],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "sushiswap": {
       "origins": ["https://sushi.com", "https://www.sushi.com", "http://localhost:5173"],
@@ -158,7 +160,8 @@
         }
       ],
       "others": [],
-      "feeRecipients": []
+      "feeRecipients": [],
+      "relayers": []
     },
     "balancer": {
       "origins": [
@@ -205,16 +208,18 @@
           "label": "Permit2",
           "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
           "verified": true
-        },
+        }
+      ],
+      "others": [],
+      "feeRecipients": [],
+      "relayers": [
         {
           "address": "0x7852fB9d0895e6e8b3EedA553c03F6e2F9124dF9",
           "label": "BalancerRelayer v6",
           "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
           "verified": true
         }
-      ],
-      "others": [],
-      "feeRecipients": []
+      ]
     }
   },
   "utilities": [

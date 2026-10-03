@@ -29,6 +29,11 @@ export const dexSchema = z.object({
   others: z.array(entrySchema).default([]),
   /** Non-user recipients the official frontend routes a portion of output to (interface fees). */
   feeRecipients: z.array(entrySchema).default([]),
+  /**
+   * Operators that may act on the user's behalf inside a protocol (Balancer V2 Vault relayers).
+   * Judged only for relayer approvals; an ERC-20 approve to them is still R2.
+   */
+  relayers: z.array(entrySchema).default([]),
 });
 
 export const whitelistSchema = z.object({

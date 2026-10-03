@@ -13,6 +13,7 @@ export type AllowedSet = {
   utilities: ReadonlyMap<Address, ScopedEntry>;
   others: ReadonlyMap<Address, ScopedEntry>;
   feeRecipients: ReadonlyMap<Address, ScopedEntry>;
+  relayers: ReadonlyMap<Address, ScopedEntry>;
 };
 
 export type Scope = {
@@ -31,6 +32,7 @@ const EMPTY: AllowedSet = {
   utilities: new Map(),
   others: new Map(),
   feeRecipients: new Map(),
+  relayers: new Map(),
 };
 
 export function normalizeOrigin(origin: string): string | undefined {
@@ -58,6 +60,7 @@ function buildAllowed(wl: Whitelist, dexNames: string[]): AllowedSet {
   const utilities = new Map<Address, ScopedEntry>();
   const others = new Map<Address, ScopedEntry>();
   const feeRecipients = new Map<Address, ScopedEntry>();
+  const relayers = new Map<Address, ScopedEntry>();
   // An address shared by several DEXes (e.g. Permit2) keeps the first DEX's entry for labels;
   // membership — what the rules use — is the same either way.
   const put = (m: Map<Address, ScopedEntry>, e: WhitelistEntry, dex?: string) => {
@@ -72,9 +75,10 @@ function buildAllowed(wl: Whitelist, dexNames: string[]): AllowedSet {
     dex.spenders.forEach((e) => put(spenders, e, name));
     dex.others.forEach((e) => put(others, e, name));
     dex.feeRecipients.forEach((e) => put(feeRecipients, e, name));
+    dex.relayers.forEach((e) => put(relayers, e, name));
   }
   wl.utilities.forEach((e) => put(utilities, e));
-  return { routers, spenders, utilities, others, feeRecipients };
+  return { routers, spenders, utilities, others, feeRecipients, relayers };
 }
 
 /**
@@ -116,7 +120,14 @@ export function lookup(
 ): { role: keyof AllowedSet; entry: ScopedEntry } | undefined {
   if (!address) return undefined;
   const a = getAddress(address);
-  for (const role of ['routers', 'spenders', 'utilities', 'others', 'feeRecipients'] as const) {
+  for (const role of [
+    'routers',
+    'spenders',
+    'utilities',
+    'others',
+    'relayers',
+    'feeRecipients',
+  ] as const) {
     const entry = allowed[role].get(a);
     if (entry) return { role, entry };
   }

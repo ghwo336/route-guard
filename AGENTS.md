@@ -244,6 +244,7 @@ type Verdict = {
 - router와 spender는 다른 경우가 많으므로 반드시 따로 수집한다.
 - `feeRecipients`(선택): 공식 프론트엔드가 출력의 일부를 보내는 수수료 수령 주소(Uniswap `PAY_PORTION`/`TRANSFER` 대상 FeeCollector). router recipient 판정에서 본인·센티널과 함께 정상으로 본다. 없으면 정상 스왑이 R8로 오탐된다.
 - `version`(router 엔트리, 선택): UniversalRouter 버전. command 집합(1.2는 V4 없음)과 V4 swap struct 레이아웃(2.0 vs 2.1.1+)이 버전마다 달라 디코딩에 필요하다.
+- `relayers`(선택): 프로토콜 안에서 사용자 대신 행동할 수 있는 operator(Balancer V2 Vault relayer). relayer 승인(`setRelayerApproval`)만 이 목록으로 판정하고(R1/R3/R4), 이 주소로의 ERC-20 approve는 미등록 spender(R2)로 본다.
 - `others`: 공식 프론트엔드가 swap 외에 직접 호출하는 컨트랙트(Uniswap NonfungiblePositionManager, V4 PositionManager 등). R11 오탐을 막기 위한 것이며 calldata는 해석하지 않는다.
 - CoW `routers`에는 GPv2Settlement와 CoWSwapEthFlow를 둘 다 넣는다.
 - pool 주소는 수집하지 않는다. 사용자 tx는 router로 가고, pool 호출은 router 내부에서 일어난다.

@@ -114,6 +114,38 @@ describe('spenderNote', () => {
   });
 });
 
+describe('spenderNote for Balancer relayer approvals', () => {
+  const bal = resolveScope('https://balancer.fi', 1, 'scoped', BUNDLED_WHITELISTS).allowed;
+  const RELAYER = '0x35Cea9e57A393ac66Aaa7E25C391D52C74B5648f';
+  const VAULT = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
+  it('is judged against relayers, not spenders', () => {
+    expect(
+      spenderNote(RELAYER, { allowed: bal }, { routersAllowed: false, relayer: true }),
+    ).toEqual({
+      badge: '공식 Balancer BalancerRelayer v6',
+      tone: 'ok',
+    });
+    expect(
+      spenderNote(VAULT, { allowed: bal }, { routersAllowed: false, relayer: true }).tone,
+    ).toBe('warn');
+    expect(spenderNote(RELAYER, { allowed: bal }, { routersAllowed: false }).tone).toBe('warn');
+    const a: DecodedAction = {
+      kind: 'setApprovalForAll',
+      scope: 'balancer-relayer',
+      to: VAULT,
+      operator: RELAYER,
+      approved: true,
+    };
+    expect(
+      buildNotes(
+        { origin: 'x', protected: true, method: 'm', chainId: 1, target: VAULT, spender: RELAYER },
+        a,
+        { allowed: bal },
+      )?.spender?.tone,
+    ).toBe('ok');
+  });
+});
+
 describe('targetNote', () => {
   it('labels official targets; unknown is only suspicious where a DEX contract is expected', () => {
     expect(targetNote(UR, ctx, { mustBeOfficial: true })).toEqual({

@@ -99,7 +99,7 @@ describe('bundled whitelists', () => {
     });
   });
 
-  it('Balancer: V2 Vault / V3 routers / Relayer v6 as routers; Vault, Permit2, Relayer as spenders', () => {
+  it('Balancer: V2 Vault / V3 routers / Relayer v6 as routers; Vault and Permit2 as spenders; Relayer v6 as relayer', () => {
     for (const chainId of [1, 11155111]) {
       for (const origin of [
         'https://balancer.fi',
@@ -115,9 +115,11 @@ describe('bundled whitelists', () => {
           'Vault V2',
         ]);
         expect([...s.allowed.spenders.values()].map((e) => e.label).sort()).toEqual([
-          'BalancerRelayer v6',
           'Permit2',
           'Vault V2',
+        ]);
+        expect([...s.allowed.relayers.values()].map((e) => e.label)).toEqual([
+          'BalancerRelayer v6',
         ]);
       }
     }

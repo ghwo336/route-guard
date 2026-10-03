@@ -249,7 +249,20 @@
 - `multicall(bytes[])` selector 충돌(SwapRouter02) 때문에 `to`가 Balancer면 Balancer 디코더를 먼저 시도
 ### [x] 40 `test(core): Phase 7 protocol scenarios` — 47e996b
 - 프로토콜마다 정상 LOW / recipient=ATTACKER R8 / approve(ATTACKER) R2 / 미등록 컨트랙트 R11. Sepolia 배포가 있는 프로토콜(Sushi, Balancer)만 playground S12~
-### [x] 41 `docs: README protocol table, limits, DNS hijack notes`
+### [x] 41 `docs: README protocol table, limits, DNS hijack notes` — 23a4893
+
+---
+
+## Phase 8. Phase 7 후속
+
+### [x] 42 `feat(core): separate Balancer relayers from spenders`
+- 화이트리스트 스키마에 `relayers` 추가. relayer 승인(R1/R3)은 `relayers` 기준, relayer 주소로의 ERC-20 approve는 미등록 spender(R2)
+
+### [ ] 43 `docs: note SushiSwap normal swaps as a structural false positive`
+
+### [ ] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap`
+- Router NG가 `_route`의 풀 주소에 토큰을 승인·전송하고 `exchange`를 호출하는지 소스로 확인, 공식 router + 본인 수령 + 가짜 풀 + min_dy=1이 현재 판정으로 통과하는지 재현. 대응 선택지(A: Curve API 풀 스냅샷 / B: 항상 R9)와 Balancer 검토는 제안만
+- **여기서 멈추고 결정 대기**
 
 ---
 

@@ -21,7 +21,7 @@ export function unverifiedEntries(wl) {
     }
   };
   for (const [dex, d] of Object.entries(wl?.dexes ?? {})) {
-    for (const role of ['routers', 'spenders', 'others', 'feeRecipients'])
+    for (const role of ['routers', 'spenders', 'others', 'feeRecipients', 'relayers'])
       visit(`${dex}.${role}`, d?.[role]);
   }
   visit('utilities', wl?.utilities);

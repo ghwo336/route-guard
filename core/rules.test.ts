@@ -558,6 +558,10 @@ describe('Balancer (review decision 3)', () => {
     expectRule(sign(payload, BAL), 'HIGH', ['R3']);
   });
 
+  it('an ERC-20 approve to the relayer is an unregistered spender (R2)', () => {
+    expectRule(tx(USDC, c.approve(RELAYER, c.MAX_UINT256), undefined, BAL), 'HIGH', ['R2']);
+  });
+
   it('V3 router multicall is decoded as Balancer, not as Uniswap SwapRouter02', () => {
     const swap = proto.balancerV3SwapSingle({
       tokenIn: USDC,

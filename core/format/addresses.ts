@@ -11,7 +11,13 @@ import { recipientLabel } from './sentinel';
  */
 export type NoteContext = { allowed: AllowedSet; signer?: Address };
 
-const DEX_NAMES: Record<string, string> = { uniswap: 'Uniswap', cow: 'CoW Swap' };
+const DEX_NAMES: Record<string, string> = {
+  uniswap: 'Uniswap',
+  cow: 'CoW Swap',
+  sushiswap: 'SushiSwap',
+  curve: 'Curve',
+  balancer: 'Balancer',
+};
 
 /** "공식 Uniswap Permit2", "공식 WETH", "공식 Uniswap SwapProxy (미검증)". */
 export function officialLabel(entry: ScopedEntry): string {
@@ -39,15 +45,20 @@ export function recipientNote(
   return { badge: '⚠ 본인 아님', tone: 'warn' };
 }
 
-/** Official spender (routers count only for Permit2 permits / Permit2.approve). */
+/**
+ * Official spender (routers count only for Permit2 permits / Permit2.approve). For a Balancer
+ * relayer approval the "spender" is the relayer, judged against `relayers` like the rules do.
+ */
 export function spenderNote(
   address: Address,
   ctx: NoteContext,
-  opts: { routersAllowed: boolean },
+  opts: { routersAllowed: boolean; relayer?: boolean },
 ): AddressNote {
   const a = getAddress(address);
-  const entry =
-    ctx.allowed.spenders.get(a) ?? (opts.routersAllowed ? ctx.allowed.routers.get(a) : undefined);
+  const entry = opts.relayer
+    ? ctx.allowed.relayers.get(a)
+    : (ctx.allowed.spenders.get(a) ??
+      (opts.routersAllowed ? ctx.allowed.routers.get(a) : undefined));
   return entry ? { badge: officialLabel(entry), tone: 'ok' } : { badge: '⚠ 미등록', tone: 'warn' };
 }
 
@@ -93,7 +104,9 @@ export function buildNotes(
     const t = targetNote(details.target, ctx, { mustBeOfficial: !targetIsToken(action) });
     if (t) notes.target = t;
   }
-  if (details.spender) notes.spender = spenderNote(details.spender, ctx, { routersAllowed });
+  const relayer = action.kind === 'setApprovalForAll' && action.scope === 'balancer-relayer';
+  if (details.spender)
+    notes.spender = spenderNote(details.spender, ctx, { routersAllowed, relayer });
   const zeroIsOwner = action.kind === 'cowOrder' || action.kind === 'cowEthFlowOrder';
   if (details.recipients?.length) {
     notes.recipients = details.recipients.map((r) => recipientNote(r, ctx, { zeroIsOwner }));

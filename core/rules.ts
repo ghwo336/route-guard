@@ -174,7 +174,7 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
       let hit: RuleHit;
       if (!action.approved) {
         hit = { ruleId: 'R4', level: 'LOW', message: `${who}의 ${grant}을 회수합니다.` };
-      } else if (has(allowed.spenders, action.operator)) {
+      } else if (has(relayer ? allowed.relayers : allowed.spenders, action.operator)) {
         hit = { ruleId: 'R1', level: 'LOW', message: `공식 주소 ${who}에게 ${grant}을 줍니다.` };
       } else {
         hit = {
