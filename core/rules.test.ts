@@ -332,14 +332,14 @@ describe('router R7-R10', () => {
     ]);
 
   it('R7: official router, recipient self/sentinel', () => {
-    const v = expectRule(tx(UR, swap(r.MSG_SENDER, 1n)), 'LOW', ['R7']);
+    const v = expectRule(tx(UR, swap(r.MSG_SENDER, 10n ** 16n)), 'LOW', ['R7']);
     expect(v.details).toMatchObject({
       target: UR,
       tokenOut: WETH,
-      minAmountOut: 1n,
+      minAmountOut: 10n ** 16n,
       matchedDex: 'uniswap',
     });
-    expectRule(tx(UR, swap(USER, 1n)), 'LOW', ['R7']);
+    expectRule(tx(UR, swap(USER, 10n ** 16n)), 'LOW', ['R7']);
   });
 
   it('R7: fee recipient portion is normal', () => {
@@ -351,13 +351,13 @@ describe('router R7-R10', () => {
         path: [USDC, WETH],
       }),
       r.payPortion(WETH, FEE, 25n),
-      r.sweep(WETH, r.MSG_SENDER, 5n),
+      r.sweep(WETH, r.MSG_SENDER, 10n ** 16n),
     ]);
     expectRule(tx(UR, data), 'LOW', ['R7']);
   });
 
   it('R8: recipient = attacker', () => {
-    const v = expectRule(tx(UR, swap(ATTACKER, 1n)), 'HIGH', ['R8']);
+    const v = expectRule(tx(UR, swap(ATTACKER, 10n ** 16n)), 'HIGH', ['R8']);
     expect(v.summary).toContain('0xBAdB…BAD0');
   });
 
@@ -372,7 +372,7 @@ describe('router R7-R10', () => {
   it('R9: signer unknown', () => {
     const req: SignRequest = {
       method: 'eth_sendTransaction',
-      params: [{ to: UR, data: swap(USER, 1n) }],
+      params: [{ to: UR, data: swap(USER, 10n ** 16n) }],
       chainId: 1,
       origin: UNI,
     };
@@ -380,17 +380,40 @@ describe('router R7-R10', () => {
     expect(v.summary).toBe('수령 주소를 확인할 수 없습니다.');
   });
 
+  it('R10: a negligible floor (below 0.000001 of a token with known decimals) counts as 0', () => {
+    const v = expectRule(tx(UR, swap(r.MSG_SENDER, 1n)), 'MEDIUM', ['R10']);
+    expect(v.summary).toBe(
+      '최소 수령량이 0.000000000000000001 WETH로 사실상 0입니다 (0.000001 미만, 슬리피지 보호 없음).',
+    );
+    expectRule(tx(UR, swap(r.MSG_SENDER, 10n ** 12n)), 'LOW', ['R7']); // exactly 0.000001 WETH
+    // unknown decimals: only exactly 0 is R10
+    const unknownOut = r.urExecute([
+      r.v3ExactIn({
+        recipient: r.MSG_SENDER,
+        amountIn: 1n,
+        amountOutMin: 1n,
+        path: [USDC, TOKENS.nft],
+      }),
+    ]);
+    expectRule(tx(UR, unknownOut), 'LOW', ['R7']);
+  });
+
   it('R10: no slippage protection', () => {
     expectRule(tx(UR, swap(r.MSG_SENDER, 0n)), 'MEDIUM', ['R10']);
   });
 
   it('R11: router calldata sent to an unregistered address', () => {
-    expectRule(tx(ATTACKER, swap(r.MSG_SENDER, 1n)), 'HIGH', ['R11']);
+    expectRule(tx(ATTACKER, swap(r.MSG_SENDER, 10n ** 16n)), 'HIGH', ['R11']);
   });
 
   it('unverified whitelist entries are labelled in summaries', () => {
     const ok = [
-      r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+      r.v3ExactIn({
+        recipient: r.MSG_SENDER,
+        amountIn: 1n,
+        amountOutMin: 10n ** 16n,
+        path: [USDC, WETH],
+      }),
     ];
     expect(run(tx(PROXY, r.swapProxyExecute(UR, USDC, 1n, ok))).summary).toContain(
       'SwapProxy (미검증)',
@@ -399,7 +422,12 @@ describe('router R7-R10', () => {
 
   it('SwapProxy: inner router must be whitelisted', () => {
     const inner = [
-      r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+      r.v3ExactIn({
+        recipient: r.MSG_SENDER,
+        amountIn: 1n,
+        amountOutMin: 10n ** 16n,
+        path: [USDC, WETH],
+      }),
     ];
     expectRule(tx(PROXY, r.swapProxyExecute(UR, USDC, 1n, inner)), 'LOW', ['R7']);
     expectRule(tx(PROXY, r.swapProxyExecute(ATTACKER, USDC, 1n, inner)), 'HIGH', ['R11']);
@@ -470,11 +498,21 @@ describe('particles in summaries', () => {
     expect(run(tx(USDC, c.transfer(ATTACKER, 100_000_000n))).summary).toContain('100 USDC를 ');
     expect(run(tx(ATTACKER, undefined, '0xde0b6b3a7640000')).summary).toContain('1 ETH를 보냅니다');
     const s7 = r.urExecute([
-      r.v3ExactIn({ recipient: TOKENS.nft, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+      r.v3ExactIn({
+        recipient: TOKENS.nft,
+        amountIn: 1n,
+        amountOutMin: 10n ** 16n,
+        path: [USDC, WETH],
+      }),
     ]);
     expect(run(tx(UR, s7)).summary).toContain('0x2222…2222가 받습니다');
     const inner = [
-      r.v3ExactIn({ recipient: r.MSG_SENDER, amountIn: 1n, amountOutMin: 1n, path: [USDC, WETH] }),
+      r.v3ExactIn({
+        recipient: r.MSG_SENDER,
+        amountIn: 1n,
+        amountOutMin: 10n ** 16n,
+        path: [USDC, WETH],
+      }),
     ];
     expect(run(tx(PROXY, r.swapProxyExecute(ATTACKER, USDC, 1n, inner))).summary).toContain(
       'router 0xBAdB…BAD0으로 전달합니다',
@@ -508,7 +546,7 @@ describe('SushiSwap RedSnwapper (review decision 1: always R9)', () => {
   });
 
   it('recipient = attacker → R8 on top', () => {
-    expectRule(tx(RS, snwap(ATTACKER, 1n), undefined, SUSHI), 'HIGH', ['R8', 'R9']);
+    expectRule(tx(RS, snwap(ATTACKER, 10n ** 16n), undefined, SUSHI), 'HIGH', ['R8', 'R9']);
   });
 
   it('broken calldata: minimum unknown', () => {
@@ -567,7 +605,7 @@ describe('Balancer (review decision 3)', () => {
       tokenIn: USDC,
       tokenOut: WETH,
       amount: 1n,
-      limit: 1n,
+      limit: 10n ** 16n,
     });
     const v = expectRule(tx(ROUTER, proto.balancerMulticall([swap]), undefined, BAL), 'LOW', [
       'R7',

@@ -1,6 +1,7 @@
 import { getAddress, type Address } from 'viem';
 import { isSentinel } from './decode/router';
 import { isUnlimited, sameAddress, ZERO_ADDRESS } from './decode/util';
+import { isNegligibleMin } from './thresholds';
 import {
   describeAddress,
   describeToken,
@@ -408,11 +409,18 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           message: `수령 주소를 확인할 수 없습니다${action.decodeError ? ` (${action.decodeError})` : ''}.`,
         });
       }
-      if (action.hasSwap && action.minAmountOut === 0n) {
+      if (
+        action.hasSwap &&
+        action.minAmountOut !== undefined &&
+        isNegligibleMin(chainId, action.tokenOut, action.minAmountOut)
+      ) {
         hits.push({
           ruleId: 'R10',
           level: 'MEDIUM',
-          message: '최소 수령량이 0입니다 (슬리피지 보호 없음).',
+          message:
+            action.minAmountOut === 0n
+              ? '최소 수령량이 0입니다 (슬리피지 보호 없음).'
+              : `최소 수령량이 ${describeTokenAmount(chainId, action.tokenOut, action.minAmountOut)}로 사실상 0입니다 (0.000001 미만, 슬리피지 보호 없음).`,
         });
       }
       if (hits.length === 0) {

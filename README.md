@@ -108,7 +108,7 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 | R7 | router | 화이트리스트 router/utility 호출, recipient가 전부 본인·센티널·feeRecipient. 또는 `others` 호출 | LOW |
 | R8 | router | 화이트리스트 router인데 recipient 중 하나가 본인이 아님. UniswapX 주문의 출력 recipient도 같음 | **HIGH** |
 | R9 | router | recipient 디코딩 실패(모르는 command, 해석하지 않는 UniswapX 주문 타입, Balancer Relayer multicall 등), 또는 실행 경로를 검증할 수 없는 스왑(SushiSwap `snwap`) | MEDIUM |
-| R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 | MEDIUM |
+| R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0, 또는 출력 토큰 decimals를 알 때 0.000001 토큰 미만 | MEDIUM |
 | R11 | 기타 | 미등록 `to`에 calldata 또는 ETH 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM |
 | R13 | 기타 | 해석 불가 서명, 알 수 없는 typed data | MEDIUM |
@@ -132,7 +132,7 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 
   우회 예로는 확장보다 먼저 provider를 가로채기, 지갑의 다른 내부 API 쓰기 등이 있습니다. 지갑 내부 검증(예: MetaMask Snap)은 향후 과제입니다.
 - **protected origin 밖은 보호하지 않음** (scoped). 피싱 도메인 자체는 이 도구의 범위가 아닙니다.
-- **R10은 우회 가능한 보조 휴리스틱**: "최소 수령량이 0인가"만 봅니다. 공격자가 min을 1 wei처럼 의미 없이 작은 값으로 넣으면 R10은 걸리지 않습니다. 시세 대비 적정한 min인지는 판단하지 않습니다(가격 조회를 하지 않는 정책). 슬리피지 보호의 근거로 삼지 말고, recipient·spender 검사(R2·R6·R8)를 보조하는 신호로만 보세요.
+- **R10은 우회 가능한 보조 휴리스틱**: "최소 수령량이 0이거나 0.000001 토큰 미만인가"만 봅니다(decimals를 아는 토큰). decimals를 모르는 토큰은 0일 때만 걸리고, min을 입력의 1%처럼 작지만 무의미하지 않은 값으로 넣으면 걸리지 않습니다([core/gaps.test.ts](core/gaps.test.ts)). 시세 대비 적정한 min인지는 판단하지 않습니다(가격 조회를 하지 않는 정책). 슬리피지 보호의 근거로 삼지 말고, recipient·spender 검사(R2·R6·R8)를 보조하는 신호로만 보세요.
 - **가짜 토큰 경로**: 공식 router와 본인 recipient를 쓰면서 경로만 공격자 토큰 풀로 보내는 경우는 사용자 의도를 알 수 없어 판별하기 어렵습니다.
 - **애그리게이터** 미지원 (executor, srcReceiver 등 디코딩 범위가 큼).
 - **멀티시그** 서명 흐름 미지원.

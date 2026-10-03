@@ -46,7 +46,7 @@ DEX 프론트엔드가 이미 변조됐다고 가정한다. 사용자가 서명�
   - `eth_signTypedData`(v1)는 내용을 해석하지 않고 MEDIUM(R13)으로만 처리한다.
   - UniswapX `RelayOrder` 등 해석하지 않는 주문 타입은 받는 주소를 확인하지 않고 MEDIUM(R9)으로만 처리한다.
   - typed data의 `domain.chainId`는 현재 체인과 비교하지 않는다.
-  - R10은 min이 0인지만 보는 보조 휴리스틱이다. 1 wei 같은 무의미한 min으로 우회할 수 있다(가격 조회 금지 정책상 적정 min은 판단하지 않는다).
+  - R10은 min이 0이거나 0.000001 토큰 미만인지만 보는 보조 휴리스틱이다. decimals를 모르는 토큰은 0만 잡고, "입력의 1%"처럼 작지만 무의미하지 않은 min은 통과한다(가격 조회 금지 정책상 적정 min은 판단하지 않는다).
 
 ## 4. 기술 스택
 
@@ -177,7 +177,7 @@ RiskLevel: `LOW` | `MEDIUM` | `HIGH`. 여러 규칙이 걸리면 가장 높은 �
 | R7 | router | `to`가 화이트리스트 router 또는 utility이고, recipient가 전부 본인·센티널·`feeRecipients`. 또는 `to`가 `others` (calldata 미해석) | LOW |
 | R8 | router | `to`가 화이트리스트 router인데 recipient 중 하나가 본인이 아님. UniswapX 주문의 출력 recipient도 같음 | **HIGH** |
 | R9 | router | router 호출 또는 UniswapX 주문인데 recipient 디코딩 실패 | MEDIUM ("수령 주소 확인 불가") |
-| R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 (8.3) | MEDIUM ("슬리피지 보호 없음") |
+| R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0, 또는 출력 토큰 decimals를 알면(`core/format/tokens.json`) 0.000001 토큰(10^(decimals−6)) 미만 (8.3, `core/thresholds.ts`) | MEDIUM ("슬리피지 보호 없음") |
 | R11 | 기타 | 미등록 `to`(routers/spenders/utilities/others 어디에도 없음)에 calldata 또는 ETH value 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM (받는 주소 그대로 표시) |
 | R13 | 기타 | 해석 불가 서명(personal_sign, eth_sign, eth_signTypedData v1), 알 수 없는 typed data | MEDIUM |

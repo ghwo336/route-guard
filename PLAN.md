@@ -261,10 +261,19 @@
 ### [x] 43 `docs: note SushiSwap normal swaps as a structural false positive` — db5bcc8
 - README 7.5에 "구조적 오탐" 표(Sushi 전 스왑 MEDIUM, Curve 풀 페이지 HIGH, Balancer auraBAL MEDIUM)와 별도 집계 안내
 
-### [x] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap`
+### [x] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap` — 407f574
 - Router NG가 `_route`의 풀 주소에 토큰을 승인·전송하고 `exchange`를 호출하는지 소스로 확인, 공식 router + 본인 수령 + 가짜 풀 + min_dy=1이 현재 판정으로 통과하는지 재현. 대응 선택지(A: Curve API 풀 스냅샷 / B: 항상 R9)와 Balancer 검토는 제안만
 - 결과: Curve 확인(임의 풀에 무제한 approve + exchange 호출, 재현 시 LOW). Balancer는 풀 등록은 누구나 할 수 있지만 Vault 정산이라 입력량 − min으로 제한. 선택지와 추천은 `docs/protocols-phase7.md` 6장
 - **여기서 멈추고 결정 대기 (리뷰 포인트 ⑥)**
+
+리뷰 포인트 ⑥ 결정: 풀 스냅샷 화이트리스트(A/B/C) 채택 안 함. 경로·최소수령량 조작은 피해가 이번 거래 입력액으로 제한되는 별도 분류로 문서화하고, R10만 확장한다.
+
+### [x] 45 `feat(core): treat negligible minimum output as R10`
+- 최소 수령량이 0이거나, `tokens.json`에 decimals가 있는 출력 토큰 기준 0.000001 토큰 미만이면 R10. decimals를 모르면 기존대로 0일 때만
+- `core/gaps.test.ts`: "min 1 wei" 재현은 이제 MEDIUM, "min = 입력의 1%"는 알려진 한계(현재 LOW)로 추가
+
+### [ ] 46 `docs: classify attack types (approval / recipient / route+min)`
+- `docs/protocols-phase7.md` 6장과 README 한계에 3분류 표. Curve·Balancer 임의 풀, Uniswap V4 hook, 가짜 토큰 경로는 3번째 분류. V4 hook 검사는 추가하지 않음
 
 ---
 
