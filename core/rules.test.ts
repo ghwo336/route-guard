@@ -4,6 +4,7 @@ import { analyze } from './analyze';
 import { ATTACKER, TOKENS, USER } from './fixtures/addresses';
 import * as c from './fixtures/calldata';
 import * as r from './fixtures/router';
+import { NATIVE_EEEE, sushiSnwap } from './fixtures/protocols';
 import {
   cowOrder,
   eip2612Permit,
@@ -480,6 +481,39 @@ describe('particles in summaries', () => {
     for (const req of [tx(ATTACKER, '0xdeadbeef'), tx(USDC, c.transfer(ATTACKER, 1n))]) {
       expect(run(req).summary).not.toMatch(/\((을|를|이|가)\)/);
     }
+  });
+});
+
+describe('SushiSwap RedSnwapper (review decision 1: always R9)', () => {
+  const SUSHI = 'https://www.sushi.com';
+  const RS = '0xAC4c6e212A361c968F1725b4d055b47E63F80b75';
+  const snwap = (recipient: Address, amountOutMin: bigint) =>
+    sushiSnwap({
+      tokenIn: USDC,
+      amountIn: 100_000_000n,
+      recipient,
+      tokenOut: NATIVE_EEEE,
+      amountOutMin,
+      executor: ATTACKER,
+    });
+
+  it('even a normal-looking snwap is MEDIUM with the minimum shown', () => {
+    const v = expectRule(tx(RS, snwap(USER, 25_000_000_000_000_000n), undefined, SUSHI), 'MEDIUM', [
+      'R9',
+    ]);
+    expect(v.summary).toBe(
+      '실행 경로를 검증할 수 없는 스왑(임의 executor)입니다. 최소 수령량: 0.025 ETH.',
+    );
+  });
+
+  it('recipient = attacker → R8 on top', () => {
+    expectRule(tx(RS, snwap(ATTACKER, 1n), undefined, SUSHI), 'HIGH', ['R8', 'R9']);
+  });
+
+  it('broken calldata: minimum unknown', () => {
+    const v = run(tx(RS, snwap(USER, 1n).slice(0, 80), undefined, SUSHI));
+    expect(v.ruleIds).toEqual(['R9']);
+    expect(v.summary).toContain('최소 수령량: 확인 불가');
   });
 });
 

@@ -392,6 +392,17 @@ export function evaluateAction(action: DecodedAction, ctx: RuleContext): ActionR
           message: `swap 결과물 일부를 본인이 아닌 ${withJosa(bad.map(shortAddress).join(', '), '이/가')} 받습니다.`,
         });
       }
+      if (action.opaqueExecution !== undefined) {
+        const min =
+          action.minAmountOut === undefined
+            ? '확인 불가'
+            : describeTokenAmount(chainId, action.tokenOut, action.minAmountOut);
+        hits.push({
+          ruleId: 'R9',
+          level: 'MEDIUM',
+          message: `실행 경로를 검증할 수 없는 스왑(${action.opaqueExecution})입니다. 최소 수령량: ${min}.`,
+        });
+      }
       if (action.decodeError !== undefined || unverifiable) {
         hits.push({
           ruleId: 'R9',

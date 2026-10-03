@@ -232,13 +232,14 @@
 - `docs/protocols-phase7.md`: 공식 도메인, router·spender 주소와 버전, 스왑 함수의 recipient·minOut·출력 토큰 위치, Sepolia 여부, 한계
 - 리뷰 포인트 ⑤ 결정 반영: Sushi `snwap`은 항상 R9 / Curve 풀 직접 스왑은 R11+한계 / Balancer Relayer v6는 router+R9, relayer 승인은 R3·R4 / 리다이렉트 도메인도 보호 origin
 
-### [x] 34 `feat(core): add SushiSwap whitelist`
+### [x] 34 `feat(core): add SushiSwap whitelist` — 4dcbd14
 - origins `sushi.com`(리다이렉트), `www.sushi.com` / RedSnwapper = router·spender (메인넷·Sepolia). executor·수수료 주소는 넣지 않음
-### [x] 35 `feat(core): add Curve whitelist`
+### [x] 35 `feat(core): add Curve whitelist` — bbd5e8f
 - 메인넷만 (Sepolia 배포 없음). origins `curve.fi`·`www.curve.fi`·`curve.finance`(리다이렉트)·`www.curve.finance` / Router NG v1.2.0 = router·spender. 풀 주소는 넣지 않음(풀 직접 스왑은 R11·R2, 한계)
-### [x] 36 `feat(core): add Balancer whitelist`
+### [x] 36 `feat(core): add Balancer whitelist` — 230171d
 - 메인넷·Sepolia. origins `balancer.fi`·`www.balancer.fi`(앱 실행 미확인)·`app.balancer.fi`(리다이렉트) / routers: Vault V2, V3 Router v2, V3 BatchRouter, Relayer v6 / spenders: Vault V2, Permit2, Relayer v6(relayer 승인 판정용)
-### [ ] 37 `feat(core): decode SushiSwap RedSnwapper calls`
+### [x] 37 `feat(core): decode SushiSwap RedSnwapper calls`
+- `snwap` / `snwapMultiple`: recipient(들)·tokenOut·minOut 추출, 실행 경로는 항상 R9("실행 경로를 검증할 수 없는 스왑(임의 executor)", 최소 수령량 표시)
 ### [ ] 38 `feat(core): decode Curve Router NG calls`
 ### [ ] 39 `feat(core): decode Balancer V2/V3 swaps`
 ### [ ] 40 `test(core): Phase 7 protocol scenarios`

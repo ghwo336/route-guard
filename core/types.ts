@@ -169,7 +169,15 @@ export type CowPreSignatureAction = {
   signed: boolean;
 };
 
-export type RouterKind = 'universal-router' | 'swap-router-02' | 'swap-proxy';
+export type RouterKind =
+  | 'universal-router'
+  | 'swap-router-02'
+  | 'swap-proxy'
+  | 'sushi-redsnwapper'
+  | 'curve-router-ng'
+  | 'balancer-v2-vault'
+  | 'balancer-v3-router'
+  | 'balancer-v3-batch-router';
 
 /** A call into a router that moves funds to one or more recipients. */
 export type RouterCallAction = {
@@ -187,6 +195,11 @@ export type RouterCallAction = {
   innerRouter?: Address;
   /** Set when some part could not be decoded; recipients are then incomplete. */
   decodeError?: string;
+  /**
+   * Set when the call hands execution to code we cannot check (e.g. SushiSwap's arbitrary
+   * executor); the reason is shown in the R9 message.
+   */
+  opaqueExecution?: string;
 };
 
 /** Router-side call that moves nothing to third parties (e.g. cancelling an order). */
