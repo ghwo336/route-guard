@@ -3,6 +3,7 @@ import type { RiskLevel, RuleId, SignRequest } from '../types';
 import { ATTACKER, TOKENS } from './addresses';
 import * as c from './calldata';
 import * as r from './router';
+import * as proto from './protocols';
 import { cowOrder, permit2Single, uniswapXOrder } from './typedData';
 import { wl } from './whitelist';
 
@@ -159,6 +160,67 @@ export function buildScenarios(account: Address): Scenario[] {
         }),
       ),
       expected: { level: 'HIGH', ruleIds: ['R1', 'R8'] },
+    },
+
+    // Phase 7: protocols with a Sepolia deployment (SushiSwap, Balancer)
+    {
+      id: 'S12',
+      title: 'SushiSwap 스왑',
+      actual: 'RedSnwapper snwap, recipient = 본인 (실행은 임의 executor)',
+      request: tx(
+        wl(CHAIN, 'sushiswap', 'RedSnwapper'),
+        proto.sushiSnwap({
+          tokenIn: USDC,
+          amountIn: AMOUNT_IN,
+          recipient: account,
+          tokenOut: proto.NATIVE_EEEE,
+          amountOutMin: MIN_ETH_OUT,
+          executor: ATTACKER,
+        }),
+      ),
+      expected: { level: 'MEDIUM', ruleIds: ['R9'] },
+    },
+    {
+      id: 'S13',
+      title: 'Balancer V3 정상 스왑',
+      actual: '공식 Balancer V3 Router, 수령인 = msg.sender, minOut > 0',
+      request: tx(
+        wl(CHAIN, 'balancer', 'V3 Router v2'),
+        proto.balancerV3SwapSingle({
+          tokenIn: USDC,
+          tokenOut: WETH,
+          amount: AMOUNT_IN,
+          limit: MIN_ETH_OUT,
+        }),
+      ),
+      expected: { level: 'LOW', ruleIds: ['R7'] },
+    },
+    {
+      id: 'S14',
+      title: 'Balancer Vault 결과 탈취',
+      actual: '공식 Balancer V2 Vault swap, funds.recipient = ATTACKER',
+      request: tx(
+        wl(CHAIN, 'balancer', 'Vault V2'),
+        proto.balancerV2Swap({
+          sender: account,
+          recipient: ATTACKER,
+          assetIn: USDC,
+          assetOut: '0x0000000000000000000000000000000000000000',
+          amount: AMOUNT_IN,
+          limit: MIN_ETH_OUT,
+        }),
+      ),
+      expected: { level: 'HIGH', ruleIds: ['R8'] },
+    },
+    {
+      id: 'S15',
+      title: 'Balancer relayer 탈취',
+      actual: 'Vault.setRelayerApproval(본인, ATTACKER, true)',
+      request: tx(
+        wl(CHAIN, 'balancer', 'Vault V2'),
+        proto.balancerSetRelayerApproval(account, ATTACKER, true),
+      ),
+      expected: { level: 'HIGH', ruleIds: ['R3'] },
     },
   ];
 }

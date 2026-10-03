@@ -268,6 +268,12 @@ type Verdict = {
 | S9 가짜 router | `to` = ATTACKER, 임의 calldata | HIGH (R11) |
 | S10 권한 회수 | `approve(ATTACKER, 0)` | LOW (R4) |
 | S11 UniswapX 결과 탈취 | UniswapX 주문(공식 reactor), output recipient = ATTACKER | HIGH (R1 + R8) |
+| S12 SushiSwap 스왑 | RedSnwapper `snwap`, recipient = 본인 (실행은 임의 executor) | MEDIUM (R9) |
+| S13 Balancer V3 정상 스왑 | 공식 V3 Router, 수령인 = msg.sender, minOut > 0 | LOW (R7) |
+| S14 Balancer Vault 결과 탈취 | 공식 V2 Vault `swap`, `funds.recipient` = ATTACKER | HIGH (R8) |
+| S15 Balancer relayer 탈취 | `Vault.setRelayerApproval(본인, ATTACKER, true)` | HIGH (R3) |
+
+S12~S15는 Phase 7(SushiSwap·Balancer, Sepolia 배포 있음)이다. Curve는 Sepolia 배포가 없어 core 테스트(`core/fixtures/protocolScenarios.ts`, 메인넷)로만 검증한다.
 
 - `ATTACKER`는 의미 없는 테스트 주소 상수로 둔다.
 - Sepolia 기준이고 실제 자금은 필요 없다. 확장 단계에서 차단하거나 지갑에서 거절하면 된다.
@@ -290,7 +296,7 @@ type Verdict = {
 
 ## 14. 완료 정의 (Definition of Done)
 
-- [ ] playground S0~S11가 기대 결과와 일치
+- [ ] playground S0~S15가 기대 결과와 일치
 - [ ] 실제 app.uniswap.org / swap.cow.fi에서 정상 스왑·승인 시 경고가 뜨지 않음 (오탐 0)
 - [ ] MetaMask, Rabby 둘 다에서 동작 확인 (EIP-6963 경로 포함)
 - [ ] `core/` 테스트 커버리지: rules 100% 분기

@@ -34,6 +34,7 @@ const GROUPS: { title: string; ids: string[] }[] = [
   { title: '스왑 결과 탈취', ids: ['S7', 'S9'] },
   { title: '주문 결과 탈취', ids: ['S4', 'S5', 'S11'] },
   { title: '보호 약화', ids: ['S8'] },
+  { title: '다른 DEX (SushiSwap · Balancer)', ids: ['S12', 'S13', 'S14', 'S15'] },
 ];
 
 /**
