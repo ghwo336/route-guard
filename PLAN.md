@@ -238,9 +238,10 @@
 - 메인넷만 (Sepolia 배포 없음). origins `curve.fi`·`www.curve.fi`·`curve.finance`(리다이렉트)·`www.curve.finance` / Router NG v1.2.0 = router·spender. 풀 주소는 넣지 않음(풀 직접 스왑은 R11·R2, 한계)
 ### [x] 36 `feat(core): add Balancer whitelist` — 230171d
 - 메인넷·Sepolia. origins `balancer.fi`·`www.balancer.fi`(앱 실행 미확인)·`app.balancer.fi`(리다이렉트) / routers: Vault V2, V3 Router v2, V3 BatchRouter, Relayer v6 / spenders: Vault V2, Permit2, Relayer v6(relayer 승인 판정용)
-### [x] 37 `feat(core): decode SushiSwap RedSnwapper calls`
+### [x] 37 `feat(core): decode SushiSwap RedSnwapper calls` — 27fe02b
 - `snwap` / `snwapMultiple`: recipient(들)·tokenOut·minOut 추출, 실행 경로는 항상 R9("실행 경로를 검증할 수 없는 스왑(임의 executor)", 최소 수령량 표시)
-### [ ] 38 `feat(core): decode Curve Router NG calls`
+### [x] 38 `feat(core): decode Curve Router NG calls`
+- `exchange` 3개 오버로드: 6인자는 `_receiver`, 4·5인자는 `msg.sender`. 출력 토큰은 Router.vy 루프와 같은 방식으로 `_route`에서 계산, minOut = `_min_dy`
 ### [ ] 39 `feat(core): decode Balancer V2/V3 swaps`
 ### [ ] 40 `test(core): Phase 7 protocol scenarios`
 - 프로토콜마다 정상 LOW / recipient=ATTACKER R8 / approve(ATTACKER) R2 / 미등록 컨트랙트 R11. Sepolia 배포가 있는 프로토콜(Sushi, Balancer)만 playground S12~

@@ -5,6 +5,7 @@ import { decodeCowOrder, decodeCowTx } from './cow';
 import { decodeMiscTx } from './misc';
 import { decodeRouterTx } from './router';
 import { decodeSushiTx } from './sushiswap';
+import { decodeCurveTx } from './curve';
 import { parseTypedData, splitTypedDataParams } from './typedData';
 import { asAddress, asHex, isRecord, toBigInt } from './util';
 
@@ -60,6 +61,7 @@ export function decodeTx(tx: unknown, ctx: DecodeContext): DecodedAction {
       decodeCowTx(to, data) ??
       decodeRouterTx(to, data, value, ctx.versionOf) ??
       decodeSushiTx(to, data, value) ??
+      decodeCurveTx(to, data, value) ??
       decodeMiscTx(to, data, value) ?? { kind: 'unknownCall', to, value, hasData }
     );
   } catch (e) {
