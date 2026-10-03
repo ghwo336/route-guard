@@ -219,8 +219,28 @@
 ### [x] 31 `feat(ui): highlight spender and recipients` — c7253a8
 - 본인/센티널/화이트리스트가 아닌 주소에 "⚠ 본인 아님" / "⚠ 미등록" 배지와 경고색, 정상 주소에는 "본인", "공식 Uniswap Permit2" 같은 라벨
 
-### [x] 32 `feat(format): label CoW receiver 0x0 as the order owner`
+### [x] 32 `feat(format): label CoW receiver 0x0 as the order owner` — 8290514
 - "본인 (주문자, receiver=0x0)". 판정은 기존대로 정상
+
+---
+
+## Phase 7. SushiSwap · Curve · Balancer (Ethereum 메인넷 우선)
+
+목표: Uniswap/CoW와 같은 수준(공식 주소 화이트리스트 + calldata 안의 recipient 검증). 라우터 주소만 추가하는 건 금지. 규칙 번호·판정 로직은 바꾸지 않는다. 애그리게이터는 범위 밖.
+
+### [x] 33 `docs: research SushiSwap, Curve, Balancer contracts`
+- `docs/protocols-phase7.md`: 공식 도메인, router·spender 주소와 버전, 스왑 함수의 recipient·minOut·출력 토큰 위치, Sepolia 여부, 한계
+- 리뷰 포인트 ⑤ 결정 반영: Sushi `snwap`은 항상 R9 / Curve 풀 직접 스왑은 R11+한계 / Balancer Relayer v6는 router+R9, relayer 승인은 R3·R4 / 리다이렉트 도메인도 보호 origin
+
+### [ ] 34 `feat(core): add SushiSwap whitelist`
+### [ ] 35 `feat(core): add Curve whitelist`
+### [ ] 36 `feat(core): add Balancer whitelist`
+### [ ] 37 `feat(core): decode SushiSwap RedSnwapper calls`
+### [ ] 38 `feat(core): decode Curve Router NG calls`
+### [ ] 39 `feat(core): decode Balancer V2/V3 swaps`
+### [ ] 40 `test(core): Phase 7 protocol scenarios`
+- 프로토콜마다 정상 LOW / recipient=ATTACKER R8 / approve(ATTACKER) R2 / 미등록 컨트랙트 R11. Sepolia 배포가 있는 프로토콜(Sushi, Balancer)만 playground S12~
+### [ ] 41 `docs: README protocol table, limits, DNS hijack notes`
 
 ---
 
@@ -230,6 +250,7 @@
 2. **10 이후**: 판정 결과표가 AGENTS.md 11장 시나리오 표와 일치하는지
 3. **14 이후**: 실제 지갑 두 개로 수동 테스트 (실제 Uniswap/CoW에서 오탐 없는지 포함)
 4. **17 이후**: `pnpm check:whitelist` 통과 확인 후 4장 실험 진행
+5. **33 이후**: `docs/protocols-phase7.md` 검토. 특히 문서 상단 "리뷰 포인트 ⑤에서 결정할 것" 4개(Sushi executor 스키마 확장, Curve 풀 직접 호출 R11 처리, Balancer Relayer 처리, 리다이렉트 origin)
 
 ---
 
@@ -241,4 +262,5 @@
 - 온체인 화이트리스트 레지스트리 (멀티시그 + 타임락): 현재 사용하지 않기로 결정
 - 트랜잭션 시뮬레이션으로 잔고 변화 표시
 - 지원 DEX/체인 확장
+- 애그리게이터 지원 확장: Curve 레버리지가 쓰는 Enso / 0x(AllowanceHolder) / curve-solver 포함
 - typed data `domain.chainId`와 현재 체인 비교
