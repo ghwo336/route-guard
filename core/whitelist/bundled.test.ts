@@ -78,6 +78,27 @@ describe('bundled whitelists', () => {
     ).toEqual(['sushiswap']);
   });
 
+  it('Curve: mainnet only, redirect domains protected, Router NG v1.2.0 is router and spender', () => {
+    const ROUTER = '0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e';
+    for (const origin of [
+      'https://curve.fi',
+      'https://www.curve.fi',
+      'https://curve.finance',
+      'https://www.curve.finance',
+    ]) {
+      const s = resolveScope(origin, 1, 'scoped', BUNDLED_WHITELISTS);
+      expect(s.dexes).toEqual(['curve']);
+      expect(s.allowed.routers.get(ROUTER)?.label).toBe('Router NG v1.2.0');
+      expect(s.allowed.spenders.has(ROUTER)).toBe(true);
+    }
+    // no Sepolia deployment: Sepolia has a whitelist without Curve, so the origin is R0 there
+    expect(
+      resolveScope('https://www.curve.finance', 11155111, 'scoped', BUNDLED_WHITELISTS),
+    ).toMatchObject({
+      protected: false,
+    });
+  });
+
   it('CoW scope does not include Uniswap contracts', () => {
     const s = resolveScope('https://swap.cow.fi', 1, 'scoped', BUNDLED_WHITELISTS);
     expect(lookup(s.allowed, PERMIT2)).toBeUndefined();

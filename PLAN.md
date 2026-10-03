@@ -234,7 +234,8 @@
 
 ### [x] 34 `feat(core): add SushiSwap whitelist`
 - origins `sushi.com`(리다이렉트), `www.sushi.com` / RedSnwapper = router·spender (메인넷·Sepolia). executor·수수료 주소는 넣지 않음
-### [ ] 35 `feat(core): add Curve whitelist`
+### [x] 35 `feat(core): add Curve whitelist`
+- 메인넷만 (Sepolia 배포 없음). origins `curve.fi`·`www.curve.fi`·`curve.finance`(리다이렉트)·`www.curve.finance` / Router NG v1.2.0 = router·spender. 풀 주소는 넣지 않음(풀 직접 스왑은 R11·R2, 한계)
 ### [ ] 36 `feat(core): add Balancer whitelist`
 ### [ ] 37 `feat(core): decode SushiSwap RedSnwapper calls`
 ### [ ] 38 `feat(core): decode Curve Router NG calls`

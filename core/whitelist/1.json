@@ -172,6 +172,32 @@
       ],
       "others": [],
       "feeRecipients": []
+    },
+    "curve": {
+      "origins": [
+        "https://curve.fi",
+        "https://www.curve.fi",
+        "https://curve.finance",
+        "https://www.curve.finance"
+      ],
+      "routers": [
+        {
+          "address": "0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e",
+          "label": "Router NG v1.2.0",
+          "source": "https://github.com/curvefi/curve-js/blob/master/src/constants/network_constants.ts",
+          "verified": true
+        }
+      ],
+      "spenders": [
+        {
+          "address": "0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e",
+          "label": "Router NG v1.2.0",
+          "source": "https://github.com/curvefi/curve-js/blob/master/src/constants/network_constants.ts",
+          "verified": true
+        }
+      ],
+      "others": [],
+      "feeRecipients": []
     }
   },
   "utilities": [
