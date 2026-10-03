@@ -268,11 +268,11 @@
 
 리뷰 포인트 ⑥ 결정: 풀 스냅샷 화이트리스트(A/B/C) 채택 안 함. 경로·최소수령량 조작은 피해가 이번 거래 입력액으로 제한되는 별도 분류로 문서화하고, R10만 확장한다.
 
-### [x] 45 `feat(core): treat negligible minimum output as R10`
+### [x] 45 `feat(core): treat negligible minimum output as R10` — a47268f
 - 최소 수령량이 0이거나, `tokens.json`에 decimals가 있는 출력 토큰 기준 0.000001 토큰 미만이면 R10. decimals를 모르면 기존대로 0일 때만
 - `core/gaps.test.ts`: "min 1 wei" 재현은 이제 MEDIUM, "min = 입력의 1%"는 알려진 한계(현재 LOW)로 추가
 
-### [ ] 46 `docs: classify attack types (approval / recipient / route+min)`
+### [x] 46 `docs: classify attack types (approval / recipient / route+min)`
 - `docs/protocols-phase7.md` 6장과 README 한계에 3분류 표. Curve·Balancer 임의 풀, Uniswap V4 hook, 가짜 토큰 경로는 3번째 분류. V4 hook 검사는 추가하지 않음
 
 ---
@@ -294,7 +294,7 @@
 - 애그리게이터 지원 (1inch 등: executor, srcReceiver, minReturn 검증)
 - 가짜 토큰 경로 대응 (출력 토큰 allowlist 등)
 - 온체인 화이트리스트 레지스트리 (멀티시그 + 타임락): 현재 사용하지 않기로 결정
-- 트랜잭션 시뮬레이션으로 잔고 변화 표시
+- 트랜잭션 시뮬레이션으로 잔고 변화 표시 (공격 3분류의 ③ 경로·최소 수령량 조작에 대한 근본 대응: Curve·Balancer 임의 풀, 가짜 토큰 경로, Uniswap V4 hook)
 - 지원 DEX/체인 확장
 - 애그리게이터 지원 확장: Curve 레버리지가 쓰는 Enso / 0x(AllowanceHolder) / curve-solver 포함
 - typed data `domain.chainId`와 현재 체인 비교

@@ -125,6 +125,22 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 
 정직하게 기록합니다.
 
+### 공격 3분류: 무엇을 막고 무엇을 못 막는가
+
+| 분류 | 예시 (공격자가 바꾸는 것) | 피해 범위 | 현재 판정 | 근본 대응 |
+|---|---|---|---|---|
+| **① 권한 탈취** | `approve` / `increaseAllowance` / EIP-2612 Permit / Permit2 서명·`approve`의 spender, `setApprovalForAll` operator, Balancer `setRelayerApproval` relayer | 승인한 토큰의 **잔고 전체, 기한 없음**(취소 전까지, 이후 입금분 포함) | **HIGH** (R2·R3). 공식 spender면 R1, 회수는 R4 | 공식 spender·relayer 화이트리스트 (**구현됨**) |
+| **② 수령인 변조** | router `recipient`, Curve `_receiver`, Balancer V2 `funds.recipient`, CoW `receiver`, UniswapX 출력 `recipient` | **이번 거래의 출력 전체** | **HIGH** (R8·R6) | calldata·서명 안의 수령인 디코딩 (**구현됨**) |
+| **③ 경로·최소 수령량 조작** | Curve `_route`의 임의 풀, Balancer에 공격자가 등록한 풀, Uniswap 가짜 토큰 경로, Uniswap V4 hook(임의 코드) + 의미 없이 작은 min | **이번 거래의 입력액까지** (min만큼은 보장) | min이 0이거나 0.000001 토큰 미만이면 **MEDIUM**(R10). 그 밖은 **LOW (알려진 한계)** | 트랜잭션 시뮬레이션 또는 가격 조회 (**범위 밖**) |
+
+- ③은 ①과 위험 등급이 다르다. ①은 한 번의 서명으로 잔고 전체가 기한 없이 노출되지만, ③은 그 거래의 입력액이 상한이다.
+- SushiSwap `snwap`의 임의 executor도 피해는 그 거래의 `amountIn`까지라 ③과 성격이 같다. 다만 실행 경로를 전혀 볼 수 없어서 항상 R9 MEDIUM으로 표시한다(리뷰 결정 1).
+- Uniswap V4 hook은 검사를 추가하지 않는다(리뷰 포인트 ⑥). 재현은 [core/gaps.test.ts](core/gaps.test.ts)에 있다.
+
+자세한 조사와 결정은 [docs/protocols-phase7.md](docs/protocols-phase7.md) 6장에 있습니다.
+
+### 그 밖의 한계
+
 - **MAIN world 우회 가능성**: provider를 변조된 페이지와 같은 JS 컨텍스트에서 감쌉니다. 다음과 같이 우회를 어렵게 만들었지만 작정한 공격자는 우회할 여지가 있습니다.
   - 네이티브 함수는 `document_start`에 미리 잡아 둡니다.
   - 채널은 private MessagePort이고 handshake는 한 번만 합니다.
