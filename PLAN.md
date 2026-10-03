@@ -255,10 +255,11 @@
 
 ## Phase 8. Phase 7 후속
 
-### [x] 42 `feat(core): separate Balancer relayers from spenders`
+### [x] 42 `feat(core): separate Balancer relayers from spenders` — 5ea5d8f
 - 화이트리스트 스키마에 `relayers` 추가. relayer 승인(R1/R3)은 `relayers` 기준, relayer 주소로의 ERC-20 approve는 미등록 spender(R2)
 
-### [ ] 43 `docs: note SushiSwap normal swaps as a structural false positive`
+### [x] 43 `docs: note SushiSwap normal swaps as a structural false positive`
+- README 7.5에 "구조적 오탐" 표(Sushi 전 스왑 MEDIUM, Curve 풀 페이지 HIGH, Balancer auraBAL MEDIUM)와 별도 집계 안내
 
 ### [ ] 44 `test(core): reproduce Curve Router NG arbitrary-pool gap`
 - Router NG가 `_route`의 풀 주소에 토큰을 승인·전송하고 `exchange`를 호출하는지 소스로 확인, 공식 router + 본인 수령 + 가짜 풀 + min_dy=1이 현재 판정으로 통과하는지 재현. 대응 선택지(A: Curve API 풀 스냅샷 / B: 항상 R9)와 Balancer 검토는 제안만

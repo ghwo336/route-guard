@@ -283,6 +283,16 @@ pnpm check:whitelist
 4. 로그 JSON을 내보내 `verdict.level != "LOW"`인 항목 수를 셉니다. 오탐이 있었다면 `summary`와 `details.target`으로 원인을 분류합니다. 예: 화이트리스트에 없는 새 router, 해석하지 않는 command.
 5. (선택) 모드 `global`로 바꿔 Aave, Lido 등 다른 사이트에서 같은 절차를 반복하면, 범위 정책이 없을 때의 오탐률을 측정할 수 있습니다.
 
+**구조적 오탐 (설계상 정해진 경고, 오탐률 계산에서 따로 집계)**
+
+아래 경고는 버그가 아니라 설계 결정에 따른 것입니다. 결과표에는 "구조적 오탐"으로 따로 기록하고, 화이트리스트 누락 같은 "우발적 오탐"과 섞어서 세지 마세요.
+
+| 사이트 | 정상 동작 | 판정 | 이유 |
+|---|---|---|---|
+| sushi.com | 모든 스왑 | **항상 MEDIUM (R9)** | RedSnwapper는 임의 executor에게 실행을 맡겨 경로를 검증할 수 없음(리뷰 결정 1). 정상 스왑에서도 경고가 뜨며, 오탐 0이 될 수 없음 |
+| curve.finance | 풀 페이지 Swap 탭 스왑·유동성 | HIGH (approve 단계 R2, 이후 R11) | 풀 주소를 수집하지 않음(리뷰 결정 2). 메인 Swap 페이지는 LOW |
+| balancer.fi | auraBAL 스왑 (Relayer v6) | MEDIUM (R9) | Relayer multicall 내부를 해석하지 않음(리뷰 결정 3) |
+
 결과 기록 양식:
 
 | 사이트 | 동작 | 횟수 N | 경고 수 | 오탐 원인 |
@@ -291,6 +301,9 @@ pnpm check:whitelist
 | app.uniswap.org | 스왑 | | | |
 | swap.cow.fi | 주문 서명 | | | |
 | swap.cow.fi | EthFlow | | | |
+| sushi.com | 스왑 | | (구조적: 전부 MEDIUM 예상) | 구조적 오탐 |
+| www.curve.finance | 메인 Swap 페이지 | | | |
+| balancer.fi | V2/V3 스왑 | | | |
 
 ### 7.6 대조 실험 (MetaMask 기본 경고 / Rabby)
 
