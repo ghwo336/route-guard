@@ -4,7 +4,17 @@
 
 DEX 프론트엔드가 이미 변조됐다고 가정하고, 사용자가 서명하기 직전에 지갑으로 가는 요청을 가로채 **공식 컨트랙트 화이트리스트**와 비교하는 크롬 확장(MV3)입니다. 보안 리서치("익숙한 화면 속 자산 탈취")의 실험 도구이며, 기능 수보다 판정 로직의 정확성과 재현 가능성을 우선합니다.
 
-대상은 **Uniswap**(app.uniswap.org)과 **CoW Swap**(swap.cow.fi), 체인은 **Ethereum mainnet**과 **Sepolia**입니다.
+### 지원 프로토콜
+
+| 프로토콜 | 보호 origin | 검사하는 컨트랙트 | recipient 검증 | 체인 |
+|---|---|---|---|---|
+| Uniswap | `app.uniswap.org` | UniversalRouter(1.2~2.2.0), SwapRouter02, SwapProxy, Permit2, UniswapX reactor | 라우터 command·UniswapX 주문 출력 | 메인넷, Sepolia |
+| CoW Swap | `swap.cow.fi` | GPv2Settlement, CoWSwapEthFlow, GPv2VaultRelayer | 주문 `receiver` | 메인넷, Sepolia |
+| SushiSwap | `sushi.com`, `www.sushi.com` | RedSnwapper (router·spender) | `recipient`. 단 실행 경로(임의 executor)는 검증 불가 → **항상 R9** | 메인넷, Sepolia |
+| Curve | `curve.fi`, `www.curve.fi`, `curve.finance`, `www.curve.finance` | Router NG v1.2.0 | `exchange`의 `_receiver`(기본 `msg.sender`) | 메인넷 |
+| Balancer | `balancer.fi`, `www.balancer.fi`, `app.balancer.fi` | V2 Vault, V3 Router v2, V3 BatchRouter, Relayer v6, Permit2 | V2 `funds.recipient` / V3는 항상 `msg.sender` / relayer 승인 | 메인넷, Sepolia |
+
+리다이렉트만 하는 도메인(`curve.fi`, `sushi.com`, `app.balancer.fi` 등)도 보호 origin입니다. 실제 하이재킹(2022년 Curve)에서는 이런 도메인 자체가 탈취됐기 때문입니다. 프로토콜별 근거와 출처는 [docs/protocols-phase7.md](docs/protocols-phase7.md)에 있습니다. 애그리게이터(1inch, 0x 등)는 지원하지 않습니다.
 
 - 상세 스펙: [AGENTS.md](AGENTS.md)
 - 커밋 단위 개발 기록: [PLAN.md](PLAN.md)
@@ -90,14 +100,14 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 | R0 | 범위 | origin이 protected가 아님 (scoped) | 통과, 로그만 |
 | R1 | 승인 | spender가 화이트리스트에 있음 (Permit2 서명·`Permit2.approve`는 routers도 인정) | LOW (무제한이면 표시) |
 | R2 | 승인 | spender 미등록 & amount > 0, 또는 Permit2 `verifyingContract`가 공식 Permit2가 아님 | **HIGH** |
-| R3 | 승인 | `setApprovalForAll(operator, true)`, operator 미등록 | **HIGH** |
+| R3 | 승인 | `setApprovalForAll(operator, true)` 또는 Balancer Vault `setRelayerApproval(…, relayer, true)`(tx·서명), operator/relayer 미등록 | **HIGH** |
 | R4 | 승인 | 권한 회수 (`approve(x, 0)` 등) | LOW |
 | R5 | 주문 | CoW 주문의 `verifyingContract`가 미등록 | **HIGH** |
 | R6 | 주문 | CoW 주문 / EthFlow 주문의 receiver가 0x0도 본인도 아님 | **HIGH** |
 | R16 | 주문 | CoW `setPreSignature` (주문 내용 확인 불가) | MEDIUM |
 | R7 | router | 화이트리스트 router/utility 호출, recipient가 전부 본인·센티널·feeRecipient. 또는 `others` 호출 | LOW |
 | R8 | router | 화이트리스트 router인데 recipient 중 하나가 본인이 아님. UniswapX 주문의 출력 recipient도 같음 | **HIGH** |
-| R9 | router | recipient 디코딩 실패 (모르는 command, 해석하지 않는 UniswapX 주문 타입 등) | MEDIUM |
+| R9 | router | recipient 디코딩 실패(모르는 command, 해석하지 않는 UniswapX 주문 타입, Balancer Relayer multicall 등), 또는 실행 경로를 검증할 수 없는 스왑(SushiSwap `snwap`) | MEDIUM |
 | R10 | router | swap이 있는데 호출 전체의 output floor 최댓값이 0 | MEDIUM |
 | R11 | 기타 | 미등록 `to`에 calldata 또는 ETH 전송 | **HIGH** |
 | R12 | 기타 | `transfer` / `transferFrom` | MEDIUM |
@@ -128,12 +138,24 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
 - **멀티시그** 서명 흐름 미지원.
 - **확장 자체의 변조**는 막지 못합니다.
 - **CoW `setPreSignature`**: tx에는 주문 UID만 있어서 receiver를 확인할 수 없습니다(R16 MEDIUM).
+- **SushiSwap은 애그리게이터 구조라 recipient 검증만으로는 부족합니다.** RedSnwapper `snwap`은 사용자 토큰을 calldata로 지정한 **임의의 executor**로 보내고, 마지막에 "recipient 잔고가 최소 수령량 이상 늘었는가"만 확인합니다. 공식 executor도 범용이라 `executorData`만 바꾸면 자금을 빼낼 수 있습니다. 그래서 모든 `snwap` 호출을 R9 MEDIUM("실행 경로를 검증할 수 없는 스왑(임의 executor)")으로 표시하고 최소 수령량을 보여 줍니다. executor 화이트리스트는 두지 않습니다.
+- **Curve 풀 직접 스왑은 오탐(HIGH)입니다.** curve.finance의 풀 페이지 Swap 탭은 router를 거치지 않고 풀 컨트랙트를 직접 호출합니다. 풀 주소는 수집하지 않으므로 이 경로는 R11 HIGH가 됩니다. 실제로는 그보다 먼저 필요한 `approve(풀)`가 미등록 spender라서 R2 HIGH로 먼저 걸립니다. 메인 Swap 페이지(Router NG)는 정상(LOW)입니다.
+- **Balancer**
+  - Relayer v6(auraBAL 스왑 전용)의 `multicall` 안쪽(BatchRelayerLibrary 호출)은 해석하지 않습니다(R9).
+  - V2 `batchSwap`에서 음수 limit이 하나도 없으면, 최종 출력과 중간 자산을 구분할 수 없습니다. 그래서 R10을 적용하지 않습니다.
+  - `www.balancer.fi`가 실제로 앱을 띄우는지는 확인하지 못했습니다(origin에는 포함).
 - **UniswapX 주문**: ExclusiveDutch / V2Dutch / V3Dutch / Priority 주문은 출력 recipient까지 검사하지만, `RelayOrder` 등 그 밖의 주문 타입은 받는 주소를 확인하지 않고 MEDIUM(R9)만 표시합니다.
 - **`others`**(PositionManager 등) 호출은 `to`만 확인하고 calldata 안의 recipient는 해석하지 않습니다. UniversalRouter의 포지션 매니저 command, Across 브리지 command도 해석하지 않습니다(R9).
 - **`eth_signTypedData`(v1)**은 해석하지 않습니다(R13).
 - typed data의 `domain.chainId`는 현재 체인과 비교하지 않습니다.
 - 토큰 심볼·소수점은 조회하지 않습니다(외부 API·온체인 조회 금지 정책). 정적 메타데이터([core/format/tokens.json](core/format/tokens.json): 체인별 USDC·WETH)에 있는 토큰만 `100 USDC`처럼 표시하고, 나머지는 주소와 원시 정수("decimals 알 수 없음")로 표시합니다.
 - 화이트리스트는 확장에 번들됩니다. 공식 프론트엔드가 새 router를 배포하면 JSON을 갱신해야 하며, 그 전까지는 R11 오탐이 날 수 있습니다.
+
+## 6.1 리서치 메모: 실제 프론트엔드 하이재킹 사례
+
+- **Curve (2022-08-09~10)**: 도메인 등록기관 iwantmyname의 네임서버가 침해돼 `curve.fi` DNS가 공격자 서버로 바뀌었습니다. 복제된 사이트가 악성 컨트랙트에 대한 approve를 요청했고, 약 $575K가 탈취됐습니다. 출처: [rekt.news "Curve Finance - REKT"](https://rekt.news/curve-finance-rekt), [Cointelegraph](https://cointelegraph.com/news/curve-finance-exploit-experts-dissect-what-went-wrong)
+- **Balancer (2023-09-19~20)**: `.fi` 도메인 등록기관 EuroDNS가 사회공학 공격을 당해 `balancer.fi` 네임서버가 바뀌었습니다. 피싱 프론트엔드가 공격자 주소로의 approve·transferFrom을 유도했고, 약 $238K가 탈취됐습니다. Balancer 공식 성명("a social engineering attack on EuroDNS")은 다음 출처에서 인용: [Cointelegraph](https://cointelegraph.com/news/balancer-social-engineering-attack-dns-provider-frontend-hijack), Balancer post-mortem [Medium](https://medium.com/balancer-protocol/dns-security-incident-post-mortem-1b1feb735aca) (자동 조회가 차단돼 본문은 직접 확인하지 못함)
+- 두 사례 모두 "공식 도메인에서, 컨트랙트는 정상인데 approve 대상만 공격자"인 형태입니다. route-guard에서는 R2(미등록 spender)에 해당하며, 리다이렉트 도메인도 보호 origin에 넣는 이유이기도 합니다.
 
 ## 7. 실험 재현
 
@@ -152,7 +174,7 @@ pnpm build        # → .output/chrome-mv3
 
 개발 중에는 `pnpm dev`로 확장을 로드한 별도 브라우저를 띄울 수 있습니다(지갑은 그 브라우저에 따로 설치해야 합니다).
 
-### 7.2 playground 시나리오 (S0–S11)
+### 7.2 playground 시나리오 (S0–S15)
 
 ```sh
 pnpm playground   # http://localhost:5173
@@ -185,6 +207,12 @@ pnpm playground   # http://localhost:5173
 | S9 가짜 router | `to` = ATTACKER, 임의 calldata | HIGH (R11) |
 | S10 권한 회수 | `approve(ATTACKER, 0)` | LOW (R4) |
 | S11 UniswapX 결과 탈취 | UniswapX 주문(공식 reactor), output recipient = ATTACKER | HIGH (R1 + R8) |
+| S12 SushiSwap 스왑 | RedSnwapper `snwap`, recipient = 본인 (실행은 임의 executor) | MEDIUM (R9) |
+| S13 Balancer V3 정상 스왑 | 공식 V3 Router, 수령인 = msg.sender | LOW (R7) |
+| S14 Balancer Vault 결과 탈취 | 공식 V2 Vault `swap`, `funds.recipient` = ATTACKER | HIGH (R8) |
+| S15 Balancer relayer 탈취 | `Vault.setRelayerApproval(본인, ATTACKER, true)` | HIGH (R3) |
+
+Curve는 Sepolia 배포가 없어 playground 대신 메인넷 core 테스트([core/fixtures/protocolScenarios.ts](core/fixtures/protocolScenarios.ts))로 검증합니다.
 
 같은 데이터([core/fixtures/scenarios.ts](core/fixtures/scenarios.ts))로 `pnpm test`가 판정 결과를 검증합니다.
 
@@ -288,6 +316,10 @@ route-guard를 끄려면 `chrome://extensions`에서 비활성화합니다.
 | S9 | | | HIGH |
 | S10 | | | LOW |
 | S11 | | | HIGH |
+| S12 | | | MEDIUM |
+| S13 | | | LOW |
+| S14 | | | HIGH |
+| S15 | | | HIGH |
 
 칸에는 "경고 없음 / 일반 경고 / 구체적 경고(주소·금액 표시)"처럼 표시 수준을 적습니다. 지갑 경고는 버전에 따라 달라지므로 **지갑 버전과 날짜**를 함께 기록하세요.
 

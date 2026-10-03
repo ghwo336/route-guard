@@ -247,9 +247,9 @@
 - V3 Router·BatchRouter: recipient = `msg.sender`, `permitBatchAndCall`·`multicall` 안쪽 호출 디코딩. Relayer v6 multicall은 R9
 - relayer 승인: `setRelayerApproval` tx와 `Balancer V2 Vault` EIP-712 서명 → 미등록 R3 / 공식 R1 / 해제 R4
 - `multicall(bytes[])` selector 충돌(SwapRouter02) 때문에 `to`가 Balancer면 Balancer 디코더를 먼저 시도
-### [x] 40 `test(core): Phase 7 protocol scenarios`
+### [x] 40 `test(core): Phase 7 protocol scenarios` — 47e996b
 - 프로토콜마다 정상 LOW / recipient=ATTACKER R8 / approve(ATTACKER) R2 / 미등록 컨트랙트 R11. Sepolia 배포가 있는 프로토콜(Sushi, Balancer)만 playground S12~
-### [ ] 41 `docs: README protocol table, limits, DNS hijack notes`
+### [x] 41 `docs: README protocol table, limits, DNS hijack notes`
 
 ---
 
