@@ -54,7 +54,7 @@ describe('bundled whitelists', () => {
 
   it('the playground origin covers both DEXes on Sepolia', () => {
     const s = resolveScope(PLAYGROUND, 11155111, 'scoped', BUNDLED_WHITELISTS);
-    expect(s.dexes).toEqual(['uniswap', 'cow', 'sushiswap']);
+    expect(s.dexes).toEqual(['uniswap', 'cow', 'sushiswap', 'balancer']);
   });
 
   it('Permit2 is a Uniswap spender on both chains', () => {
@@ -97,6 +97,30 @@ describe('bundled whitelists', () => {
     ).toMatchObject({
       protected: false,
     });
+  });
+
+  it('Balancer: V2 Vault / V3 routers / Relayer v6 as routers; Vault, Permit2, Relayer as spenders', () => {
+    for (const chainId of [1, 11155111]) {
+      for (const origin of [
+        'https://balancer.fi',
+        'https://www.balancer.fi',
+        'https://app.balancer.fi',
+      ]) {
+        const s = resolveScope(origin, chainId, 'scoped', BUNDLED_WHITELISTS);
+        expect(s.dexes).toEqual(['balancer']);
+        expect([...s.allowed.routers.values()].map((e) => e.label).sort()).toEqual([
+          'BalancerRelayer v6',
+          'V3 BatchRouter',
+          'V3 Router v2',
+          'Vault V2',
+        ]);
+        expect([...s.allowed.spenders.values()].map((e) => e.label).sort()).toEqual([
+          'BalancerRelayer v6',
+          'Permit2',
+          'Vault V2',
+        ]);
+      }
+    }
   });
 
   it('CoW scope does not include Uniswap contracts', () => {

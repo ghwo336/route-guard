@@ -159,6 +159,62 @@
       ],
       "others": [],
       "feeRecipients": []
+    },
+    "balancer": {
+      "origins": [
+        "https://balancer.fi",
+        "https://www.balancer.fi",
+        "https://app.balancer.fi",
+        "http://localhost:5173"
+      ],
+      "routers": [
+        {
+          "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+          "label": "Vault V2",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        },
+        {
+          "address": "0x5e315f96389C1aaF9324D97d3512ae1e0Bf3C21a",
+          "label": "V3 Router v2",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        },
+        {
+          "address": "0xC85b652685567C1B074e8c0D4389f83a2E458b1C",
+          "label": "V3 BatchRouter",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        },
+        {
+          "address": "0x7852fB9d0895e6e8b3EedA553c03F6e2F9124dF9",
+          "label": "BalancerRelayer v6",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        }
+      ],
+      "spenders": [
+        {
+          "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+          "label": "Vault V2",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        },
+        {
+          "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+          "label": "Permit2",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        },
+        {
+          "address": "0x7852fB9d0895e6e8b3EedA553c03F6e2F9124dF9",
+          "label": "BalancerRelayer v6",
+          "source": "https://github.com/balancer/balancer-deployments/blob/master/addresses/sepolia.json",
+          "verified": true
+        }
+      ],
+      "others": [],
+      "feeRecipients": []
     }
   },
   "utilities": [

@@ -1,3 +1,4 @@
+import { getAddress } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { lookup, normalizeOrigin, resolveScope, type Whitelists } from './loader';
 import { parseWhitelist } from './schema';
@@ -115,6 +116,25 @@ describe('resolveScope', () => {
     expect(s.dexes).toEqual(['a', 'b']);
     expect(lookup(s.allowed, A.dexARouter as `0x${string}`)?.entry.dex).toBe('a');
     expect(lookup(s.allowed, A.dexBRouter as `0x${string}`)?.entry.dex).toBe('b');
+  });
+
+  it('an address listed by several DEXes keeps the first DEX entry', () => {
+    const shared = parseWhitelist({
+      ...wl,
+      dexes: {
+        a: { ...wl.dexes.a, origins: ['http://localhost:5173'] },
+        b: {
+          ...wl.dexes.b,
+          origins: ['http://localhost:5173'],
+          spenders: [e(A.dexASpender, 'Other label')],
+        },
+      },
+    });
+    const s = resolveScope('http://localhost:5173', 1, 'scoped', { 1: shared });
+    expect(s.allowed.spenders.get(getAddress(A.dexASpender))).toMatchObject({
+      label: 'SpenderA',
+      dex: 'a',
+    });
   });
 
   it('handles junk origins', () => {

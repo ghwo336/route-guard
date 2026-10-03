@@ -58,8 +58,12 @@ function buildAllowed(wl: Whitelist, dexNames: string[]): AllowedSet {
   const utilities = new Map<Address, ScopedEntry>();
   const others = new Map<Address, ScopedEntry>();
   const feeRecipients = new Map<Address, ScopedEntry>();
-  const put = (m: Map<Address, ScopedEntry>, e: WhitelistEntry, dex?: string) =>
-    m.set(getAddress(e.address), { ...e, dex });
+  // An address shared by several DEXes (e.g. Permit2) keeps the first DEX's entry for labels;
+  // membership — what the rules use — is the same either way.
+  const put = (m: Map<Address, ScopedEntry>, e: WhitelistEntry, dex?: string) => {
+    const a = getAddress(e.address);
+    if (!m.has(a)) m.set(a, { ...e, dex });
+  };
 
   for (const name of dexNames) {
     const dex = wl.dexes[name];
