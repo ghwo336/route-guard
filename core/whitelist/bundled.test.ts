@@ -138,10 +138,9 @@ describe('bundled whitelists', () => {
     }
     expect([...unverified].sort()).toEqual([
       'ExclusiveDutchOrderReactor (UniswapX)', // Sepolia, SDK only
-      'SwapProxy',
-      'UniversalRouter 2.2.0',
+      'SwapProxy', // Sepolia, SDK only
+      'UniversalRouter 2.2.0', // Sepolia, SDK only
       'V2DutchOrderReactor (UniswapX)', // Sepolia, SDK only
-      'V3DutchOrderReactor (UniswapX)', // mainnet, SDK only
     ]);
   });
 

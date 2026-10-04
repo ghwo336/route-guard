@@ -16,7 +16,12 @@ import {
 import { wl } from './fixtures/whitelist';
 import { byRisk, evaluateAction, maxLevel } from './rules';
 import type { DecodedAction, SignRequest } from './types';
-import { BUNDLED_WHITELISTS, resolveScope } from './whitelist';
+import {
+  BUNDLED_WHITELISTS,
+  resolveScope,
+  type WhitelistEntry,
+  type Whitelists,
+} from './whitelist';
 
 const UNI = 'https://app.uniswap.org';
 const COW = 'https://swap.cow.fi';
@@ -415,9 +420,26 @@ describe('router R7-R10', () => {
         path: [USDC, WETH],
       }),
     ];
-    expect(run(tx(PROXY, r.swapProxyExecute(UR, USDC, 1n, ok))).summary).toContain(
-      'SwapProxy (미검증)',
-    );
+    const req = tx(PROXY, r.swapProxyExecute(UR, USDC, 1n, ok));
+    expect(run(req).summary).not.toContain('(미검증)');
+    // Flip SwapProxy to unverified so the test does not depend on the bundled list's state.
+    const unverify = (e: WhitelistEntry) => (e.address === PROXY ? { ...e, verified: false } : e);
+    const main = BUNDLED_WHITELISTS[1]!;
+    const uni = main.dexes.uniswap!;
+    const whitelists: Whitelists = {
+      1: {
+        ...main,
+        dexes: {
+          ...main.dexes,
+          uniswap: {
+            ...uni,
+            routers: uni.routers.map(unverify),
+            spenders: uni.spenders.map(unverify),
+          },
+        },
+      },
+    };
+    expect(analyze(req, whitelists, 'scoped').summary).toContain('SwapProxy (미검증)');
   });
 
   it('SwapProxy: inner router must be whitelisted', () => {
