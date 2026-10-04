@@ -48,12 +48,7 @@ describe('check:whitelist', () => {
 
   it('reports the current bundled mainnet list', () => {
     const labels = unverifiedEntries(mainnet).map((e) => e.label);
-    // These await a live-site check (PLAN.md 18, 19). Update when they are confirmed.
-    expect(labels).toEqual([
-      'UniversalRouter 2.2.0',
-      'SwapProxy',
-      'SwapProxy',
-      'V3DutchOrderReactor (UniswapX)',
-    ]);
+    // All mainnet entries are verified; the experiment gate (README 7.4) must pass.
+    expect(labels).toEqual([]);
   });
 });

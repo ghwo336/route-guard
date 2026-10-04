@@ -18,7 +18,10 @@ const USDC: Address = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
 describe('officialLabel', () => {
   it('names the DEX and flags unverified entries', () => {
     expect(officialLabel(allowed.spenders.get(PERMIT2)!)).toBe('공식 Uniswap Permit2');
-    expect(officialLabel(allowed.routers.get(PROXY)!)).toBe('공식 Uniswap SwapProxy (미검증)');
+    expect(officialLabel(allowed.routers.get(PROXY)!)).toBe('공식 Uniswap SwapProxy');
+    expect(officialLabel({ ...allowed.routers.get(PROXY)!, verified: false })).toBe(
+      '공식 Uniswap SwapProxy (미검증)',
+    );
     expect(officialLabel(allowed.utilities.get(WETH)!)).toBe('공식 WETH');
     expect(officialLabel({ ...allowed.spenders.get(PERMIT2)!, dex: 'other' })).toBe(
       '공식 other Permit2',
