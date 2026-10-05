@@ -242,3 +242,6 @@
 - 트랜잭션 시뮬레이션으로 잔고 변화 표시
 - 지원 DEX/체인 확장
 - typed data `domain.chainId`와 현재 체인 비교
+- MetaMask Connect SDK 등 provider를 거치지 않는 지갑 연결 검사 (app.uniswap.org + MetaMask가 이 경로라 미검사, README 6장)
+- CoW `OrderCancellations` 서명 해석 (공식 Settlement 대상이면 LOW)
+- 일부 사이트(swap.cow.fi)에서 요청 1건이 로그에 2건 남는 원인 조사 (provider 이중 래핑 의심)

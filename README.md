@@ -121,6 +121,8 @@ inject: 진행 → 복사해 둔 params로 원래 request 호출
   - params는 복사본을 분석하고 지갑에도 그 복사본을 보냅니다.
 
   우회 예로는 확장보다 먼저 provider를 가로채기, 지갑의 다른 내부 API 쓰기 등이 있습니다. 지갑 내부 검증(예: MetaMask Snap)은 향후 과제입니다.
+- **provider를 거치지 않는 지갑 연결은 검사하지 못함**: route-guard는 `window.ethereum`과 EIP-6963 provider의 `request`만 감쌉니다. app.uniswap.org는 MetaMask를 **MetaMask Connect SDK 커넥터**(wagmi `metaMask()`, `wagmi.recentConnectorId = "metaMaskSDK"`)로 연결하는데, 이 경로의 요청은 감싼 provider를 호출하지 않아 **경고도 로그도 남지 않습니다**(7.5 실험에서 확인). 페이지가 변조되면 공격자가 이 경로를 일부러 고를 수도 있습니다. 해결은 향후 과제입니다.
+- **CoW 주문 취소 서명**: `OrderCancellations` typed data는 해석하지 않아 공식 사이트의 정상 취소도 MEDIUM(R13)으로 표시됩니다(7.5 실험의 유일한 오탐).
 - **protected origin 밖은 보호하지 않음** (scoped). 피싱 도메인 자체는 이 도구의 범위가 아닙니다.
 - **R10은 우회 가능한 보조 휴리스틱**: "최소 수령량이 0인가"만 봅니다. 공격자가 min을 1 wei처럼 의미 없이 작은 값으로 넣으면 R10은 걸리지 않습니다. 시세 대비 적정한 min인지는 판단하지 않습니다(가격 조회를 하지 않는 정책). 슬리피지 보호의 근거로 삼지 말고, recipient·spender 검사(R2·R6·R8)를 보조하는 신호로만 보세요.
 - **가짜 토큰 경로**: 공식 router와 본인 recipient를 쓰면서 경로만 공격자 토큰 풀로 보내는 경우는 사용자 의도를 알 수 없어 판별하기 어렵습니다.
@@ -263,6 +265,22 @@ pnpm check:whitelist
 | app.uniswap.org | 스왑 | | | |
 | swap.cow.fi | 주문 서명 | | | |
 | swap.cow.fi | EthFlow | | | |
+
+**결과** (2026-10-05, Sepolia, 커밋 `4d5104d`, MetaMask 13.50.0, scoped)
+
+| 사이트 | 동작 | 횟수 N | 경고 수 | 비고 |
+|---|---|---|---|---|
+| app.uniswap.org | 승인 (Permit2 approve) | 1 | 0 | **검사되지 않음**: 로그 없음 (MetaMask Connect SDK 경로, 6장) |
+| app.uniswap.org | Permit2 서명 | 1 | 0 | 검사되지 않음 |
+| app.uniswap.org | 스왑 (ETH→토큰 3, 토큰→ETH 1, 토큰→토큰 1) | 5 | 0 | 검사되지 않음. 대상 router는 UniversalRouter 2.1.2 (`0x7E4f…43f3`, 화이트리스트 등록) |
+| swap.cow.fi | 승인 (EIP-2612 Permit 서명) | 1 | 0 | LOW R1, spender GPv2VaultRelayer |
+| swap.cow.fi | 주문 서명 (시장가 1, 지정가 1) | 2 | 0 | LOW, 수령인 본인 |
+| swap.cow.fi | EthFlow | 1 | 0 | LOW, CoWSwapEthFlow |
+| swap.cow.fi | 주문 취소 서명 | 1 | **1** | **오탐** MEDIUM R13: `OrderCancellations` 미해석 (6장) |
+
+- swap.cow.fi: 검사된 5건 중 오탐 1건(MEDIUM), HIGH 오탐 0건.
+- app.uniswap.org: 7건 모두 경고는 없었지만, route-guard가 요청을 **보지 못한 것**이라 오탐 측정에서 제외합니다. UniswapX 주문은 견적에 나오지 않았습니다.
+- swap.cow.fi에서는 LOW 요청 1건이 로그에 2건씩 남았습니다(원인 조사 중, PLAN.md Ideas). 위 표의 횟수는 실제 요청 수입니다.
 
 ### 7.6 대조 실험 (MetaMask 기본 경고 / Rabby)
 
