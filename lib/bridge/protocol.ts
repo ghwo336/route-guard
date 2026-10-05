@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/core/zod';
 import { WATCHED_METHODS } from '@/core/types';
 
 /**
